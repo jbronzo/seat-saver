@@ -4,7 +4,7 @@
 
 SeatSaver is a free, web-based wedding seating chart tool that helps couples plan their perfect reception layout without the stress. Built with React and designed with privacy in mind - all your guest data stays in your browser!
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20SeatSaver-blue?style=for-the-badge)](https://your-vercel-url.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20SeatSaver-blue?style=for-the-badge)](https://seat-saver.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 ## ✨ Features
