@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import Sidebar from './Sidebar';
 import CanvasChartArea from './CanvasChartArea';
 import WelcomeModal from './WelcomeModal';
@@ -9,6 +9,7 @@ const WeddingSeatingChart = () => {
   const [allGuests, setAllGuests] = useState([]);
   const [assignments, setAssignments] = useState([]); // [{name: string, table: string}]
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('All'); // New state for group filtering
   const [layoutData, setLayoutData] = useState(null);
   const [showWelcome, setShowWelcome] = useState(false); // New state for welcome modal
 
@@ -36,10 +37,12 @@ const WeddingSeatingChart = () => {
     !assignments.find(a => a.name === guest.Name)
   );
 
-  // Filter guests by search term
-  const filteredGuests = unassignedGuests.filter(guest =>
-    guest.Name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter guests by search term and group
+  const filteredGuests = unassignedGuests.filter(guest => {
+    const matchesSearch = guest.Name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGroup = selectedGroup === 'All' || guest.Group === selectedGroup;
+    return matchesSearch && matchesGroup;
+  });
 
   // Handle CSV upload
   const handleFileUpload = (event) => {
@@ -51,11 +54,27 @@ const WeddingSeatingChart = () => {
       try {
         const text = e.target.result;
         const lines = text.split('\n');
+        
+        // Check if we have headers
+        const headers = lines[0].toLowerCase().split(',').map(h => h.replace(/"/g, '').trim());
+        const hasGroupColumn = headers.includes('group');
+        
         const guests = lines.slice(1)
           .filter(line => line.trim())
           .map(line => {
             const values = line.split(',');
-            return { Name: values[0]?.replace(/"/g, '').trim() };
+            const guestData = { 
+              Name: values[0]?.replace(/"/g, '').trim() 
+            };
+            
+            // Add group if column exists
+            if (hasGroupColumn && values[1]) {
+              guestData.Group = values[1]?.replace(/"/g, '').trim();
+            } else {
+              guestData.Group = 'Unassigned';
+            }
+            
+            return guestData;
           })
           .filter(guest => guest.Name);
         
@@ -66,7 +85,7 @@ const WeddingSeatingChart = () => {
         
         setAllGuests(guests);
         setAssignments([]);
-        console.log(`Loaded ${guests.length} guests from CSV`);
+        console.log(`Loaded ${guests.length} guests from CSV${hasGroupColumn ? ' with groups' : ''}`);
       } catch (error) {
         console.error('Error parsing CSV:', error);
         alert('Error reading CSV file. Please check the file format and try again.');
@@ -124,8 +143,11 @@ const WeddingSeatingChart = () => {
       return;
     }
 
-    // Create new guest object
-    const newGuest = { Name: guestName };
+    // Create new guest object with default group
+    const newGuest = { 
+      Name: guestName,
+      Group: 'Unassigned'
+    };
     
     // Add to allGuests array
     setAllGuests(prev => [...prev, newGuest]);
@@ -135,6 +157,51 @@ const WeddingSeatingChart = () => {
     setAssignments(prev => [...prev, newAssignment]);
     
     console.log(`New guest "${guestName}" created and assigned to Table ${tableId}`);
+  }, [allGuests]);
+
+  // Handle guest group assignment - FIXED VERSION
+  const handleAssignGroup = useCallback((guestName, newGroup) => {
+    console.log(`Assigning ${guestName} to group: ${newGroup}`);
+    
+    setAllGuests(prev => {
+      const updatedGuests = prev.map(guest => 
+        guest.Name === guestName 
+          ? { ...guest, Group: newGroup }
+          : guest
+      );
+      
+      console.log('Updated guests:', updatedGuests);
+      return updatedGuests;
+    });
+    
+    // Reset group filter if we were filtering by a different group
+    if (selectedGroup !== 'All' && selectedGroup !== newGroup) {
+      setSelectedGroup('All');
+    }
+    
+    console.log(`Guest "${guestName}" assigned to group "${newGroup}"`);
+  }, [selectedGroup]);
+
+  // Get unique groups for filtering - IMPROVED VERSION
+  const availableGroups = useMemo(() => {
+    if (!allGuests || allGuests.length === 0) return ['All'];
+    
+    // Get all unique groups, filter out empty/undefined values
+    const groups = [...new Set(
+      allGuests
+        .map(g => g.Group)
+        .filter(group => group && group.trim() !== '')
+    )];
+    
+    // Sort groups, but keep 'Unassigned' at the end if it exists
+    const sortedGroups = groups.sort((a, b) => {
+      if (a === 'Unassigned') return 1;
+      if (b === 'Unassigned') return -1;
+      return a.localeCompare(b);
+    });
+    
+    console.log('Available groups:', ['All', ...sortedGroups]);
+    return ['All', ...sortedGroups];
   }, [allGuests]);
 
   // Save state
@@ -184,8 +251,12 @@ const WeddingSeatingChart = () => {
       
       <Sidebar
         filteredGuests={filteredGuests}
+        allGuests={allGuests}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
+        selectedGroup={selectedGroup}
+        setSelectedGroup={setSelectedGroup}
+        availableGroups={availableGroups}
         visibleCount={visibleCount}
         unassignedCount={unassignedCount}
         assignedGuests={assignedGuests}
@@ -195,11 +266,13 @@ const WeddingSeatingChart = () => {
         onLoadState={handleLoadState}
         onExport={handleExport}
         onDragStart={handleDragStart}
-        onShowHelp={handleShowHelp} // New prop for help button
+        onShowHelp={handleShowHelp}
+        onAssignGroup={handleAssignGroup}
       />
       <CanvasChartArea
         assignments={assignments}
         onDrop={handleDrop}
+        allGuests={allGuests}
         onRemoveGuest={handleRemoveGuest}
         onDragStart={handleDragStart}
         onLayoutChange={setLayoutData}

@@ -7,16 +7,17 @@ const CanvasTable = ({
   x, 
   y, 
   assignments, 
+  allGuests = [], // Add allGuests prop to access group information
   onDragStart,
   onDragEnd, 
   onTableClick,
   onSlotClick,
-  onAddGuest, // New prop for adding guests
+  onAddGuest,
   isHighlighted = false,
   isSelected = false,
-  tableConfig = { shape: 'circle', size: 45, capacity: 10 } // New prop for table configuration
+  tableConfig = { shape: 'circle', size: 45, capacity: 10, backgroundColor: '#f8f9fa' }
 }) => {
-  const { shape, size, capacity } = tableConfig;
+  const { shape, size, capacity, backgroundColor } = tableConfig;
   const slotSize = 6;
   const [hoveredSlot, setHoveredSlot] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -24,10 +25,17 @@ const CanvasTable = ({
   const [isClickingInfo, setIsClickingInfo] = useState(false);
   const [isClickingSlot, setIsClickingSlot] = useState(false);
   
-  // Get guests assigned to this table
+  // Get guests assigned to this table with their group information
   const guestList = assignments
     .filter(a => a.table === tableId)
-    .map(a => a.name);
+    .map(a => {
+      // Find the guest object to get their group
+      const guestObj = allGuests.find(g => g.Name === a.name);
+      return {
+        name: a.name,
+        group: guestObj ? guestObj.Group : 'Unknown'
+      };
+    });
   
   const guestCount = guestList.length;
 
@@ -36,7 +44,7 @@ const CanvasTable = ({
     switch (shape) {
       case 'rectangle':
         return {
-          width: size * 1.6, // Make rectangles wider than they are tall
+          width: size * 1.6,
           height: size,
           radius: null
         };
@@ -67,7 +75,7 @@ const CanvasTable = ({
   // Generate positions for guest slots based on shape and capacity
   const generateSlotPositions = () => {
     const slots = [];
-    const slotDistance = 15; // Distance from table edge
+    const slotDistance = 15;
     
     switch (shape) {
       case 'rectangle':
@@ -90,7 +98,8 @@ const CanvasTable = ({
         slots.push({
           x: slotX,
           y: slotY,
-          guest: guestList[i] || null,
+          guest: guestList[i] ? guestList[i].name : null,
+          guestGroup: guestList[i] ? guestList[i].group : null,
           index: i
         });
       }
@@ -107,19 +116,15 @@ const CanvasTable = ({
         let slotX, slotY;
         
         if (distance <= width) {
-          // Top edge
           slotX = -width/2 + distance;
           slotY = -height/2 - slotDistance;
         } else if (distance <= width + height) {
-          // Right edge
           slotX = width/2 + slotDistance;
           slotY = -height/2 + (distance - width);
         } else if (distance <= 2 * width + height) {
-          // Bottom edge
           slotX = width/2 - (distance - width - height);
           slotY = height/2 + slotDistance;
         } else {
-          // Left edge
           slotX = -width/2 - slotDistance;
           slotY = height/2 - (distance - 2 * width - height);
         }
@@ -127,7 +132,8 @@ const CanvasTable = ({
         slots.push({
           x: slotX,
           y: slotY,
-          guest: guestList[i] || null,
+          guest: guestList[i] ? guestList[i].name : null,
+          guestGroup: guestList[i] ? guestList[i].group : null,
           index: i
         });
       }
@@ -136,8 +142,8 @@ const CanvasTable = ({
 
     function generateOvalSlots() {
       const { width, height } = tableDimensions;
-      const a = width/2 + slotDistance; // Semi-major axis
-      const b = height/2 + slotDistance; // Semi-minor axis
+      const a = width/2 + slotDistance;
+      const b = height/2 + slotDistance;
       
       for (let i = 0; i < capacity; i++) {
         const angle = (i * (360 / capacity)) * (Math.PI / 180);
@@ -147,7 +153,8 @@ const CanvasTable = ({
         slots.push({
           x: slotX,
           y: slotY,
-          guest: guestList[i] || null,
+          guest: guestList[i] ? guestList[i].name : null,
+          guestGroup: guestList[i] ? guestList[i].group : null,
           index: i
         });
       }
@@ -186,9 +193,14 @@ const CanvasTable = ({
     }
     
     if (guestCount === 0) {
-      alert(`${tableLabel} is empty.\nShape: ${shape}\nCapacity: ${capacity}\nBackground: ${tableConfig.backgroundColor}\nNo guests have been assigned to this table yet.`);
+      alert(`${tableLabel} is empty.\nCapacity: ${capacity} guests\n\nNo guests have been assigned to this table yet.`);
     } else {
-      alert(`${tableLabel} guests (${guestCount}/${capacity}):\nShape: ${shape}\nBackground: ${tableConfig.backgroundColor}\n\n${guestList.join('\n')}`);
+      // Format guest list with groups
+      const guestDetails = guestList
+        .map(guest => `${guest.name} - ${guest.group}`)
+        .join('\n');
+      
+      alert(`${tableLabel} guests (${guestCount}/${capacity}):\n\n${guestDetails}`);
     }
     
     setTimeout(() => {
@@ -219,7 +231,6 @@ const CanvasTable = ({
   };
 
   const handleSlotLeftClick = (e, slotIndex, guest) => {
-    // Prevent event bubbling to stop table dragging
     e.cancelBubble = true;
     if (e.evt && e.evt.stopPropagation) {
       e.evt.stopPropagation();
@@ -228,7 +239,6 @@ const CanvasTable = ({
     
     if (e.evt && e.evt.button !== 0) return;
     
-    // Set flag to prevent dragging
     setIsClickingSlot(true);
     
     if (guest) {
@@ -243,30 +253,25 @@ const CanvasTable = ({
       }
     }
     
-    // Reset the flag after a short delay
     setTimeout(() => {
       setIsClickingSlot(false);
     }, 200);
   };
 
   const handleSlotRightClick = (e, slotIndex, guest) => {
-    // Prevent all event bubbling to stop table dragging
     e.evt.preventDefault();
     e.evt.stopPropagation();
     e.evt.stopImmediatePropagation();
     e.cancelBubble = true;
     
-    // Set flag to prevent dragging
     setIsClickingSlot(true);
     
     if (guest) {
-      // Existing guest - offer to remove or move
       const action = window.confirm(`${guest} is assigned to ${tableLabel}.\n\nClick OK to REMOVE from table.\nClick Cancel to keep guest here.`);
       if (action) {
         onSlotClick(guest, tableId);
       }
     } else {
-      // Empty slot - offer to add new guest
       const newGuestName = window.prompt(
         `Add a new guest to ${tableLabel}?\n\n` +
         `Enter the guest's name:\n` +
@@ -276,7 +281,6 @@ const CanvasTable = ({
       if (newGuestName && newGuestName.trim()) {
         const trimmedName = newGuestName.trim();
         
-        // Check if guest already exists (basic validation)
         const existingGuest = assignments.find(a => 
           a.name.toLowerCase() === trimmedName.toLowerCase()
         );
@@ -287,21 +291,18 @@ const CanvasTable = ({
           return;
         }
         
-        // Check if table has space
         if (guestCount >= capacity) {
           alert(`${tableLabel} is already full! (${guestCount}/${capacity})`);
           setIsClickingSlot(false);
           return;
         }
         
-        // Add the new guest
         if (onAddGuest) {
           onAddGuest(trimmedName, tableId);
         }
       }
     }
     
-    // Reset the flag after a short delay
     setTimeout(() => {
       setIsClickingSlot(false);
     }, 200);
@@ -310,7 +311,7 @@ const CanvasTable = ({
   // Render the appropriate table shape
   const renderTableShape = () => {
     const commonProps = {
-      fill: isSelected ? "#d1f2db" : isHighlighted ? "#e7f3ff" : tableConfig.backgroundColor,
+      fill: isSelected ? "#d1f2db" : isHighlighted ? "#e7f3ff" : backgroundColor,
       stroke: isSelected ? "#28a745" : isHighlighted ? "#0a58ca" : "#0d6efd",
       strokeWidth: isHighlighted || isSelected ? 3 : 2,
       shadowBlur: isHighlighted || isSelected ? 8 : 4,
@@ -500,7 +501,6 @@ const CanvasTable = ({
       {/* Guest slots */}
       {slots.map((slot, index) => (
         <Group key={index}>
-          {/* Larger invisible click area */}
           <Circle
             x={slot.x}
             y={slot.y}
@@ -510,7 +510,6 @@ const CanvasTable = ({
             onTap={(e) => handleSlotLeftClick(e, index, slot.guest)}
             onContextMenu={(e) => handleSlotRightClick(e, index, slot.guest)}
             onMouseDown={(e) => {
-              // Prevent table dragging when interacting with slots
               e.cancelBubble = true;
               if (e.evt) {
                 e.evt.stopPropagation();
@@ -518,7 +517,6 @@ const CanvasTable = ({
               }
               setIsClickingSlot(true);
               
-              // Reset flag after interaction
               setTimeout(() => {
                 setIsClickingSlot(false);
               }, 100);
@@ -528,7 +526,6 @@ const CanvasTable = ({
             style={{ cursor: slot.guest ? 'pointer' : 'copy' }}
           />
           
-          {/* Visible guest slot */}
           <Circle
             x={slot.x}
             y={slot.y}
@@ -547,14 +544,14 @@ const CanvasTable = ({
             listening={false}
           />
           
-          {/* Tooltip for guest name or add guest hint */}
+          {/* Enhanced tooltip with group information */}
           {hoveredSlot === index && (
             <Group>
               <Rect
                 x={slot.x - 75}
-                y={slot.y - (slot.guest ? 45 : 55)}
+                y={slot.y - (slot.guest ? 55 : 55)}
                 width={150}
-                height={slot.guest ? 32 : 42}
+                height={slot.guest ? 42 : 42}
                 fill="rgba(0,0,0,0.9)"
                 cornerRadius={4}
                 shadowBlur={4}
@@ -570,7 +567,17 @@ const CanvasTable = ({
                     fontWeight="bold"
                     fill="white"
                     x={slot.x - 72}
-                    y={slot.y - 38}
+                    y={slot.y - 48}
+                    width={144}
+                    align="center"
+                  />
+                  <Text
+                    text={slot.guestGroup || 'Unknown Group'}
+                    fontSize={9}
+                    fontFamily="Arial"
+                    fill="#cccccc"
+                    x={slot.x - 72}
+                    y={slot.y - 36}
                     width={144}
                     align="center"
                   />
@@ -578,9 +585,9 @@ const CanvasTable = ({
                     text="Left-click: Move • Right-click: Remove"
                     fontSize={8}
                     fontFamily="Arial"
-                    fill="#cccccc"
+                    fill="#aaaaaa"
                     x={slot.x - 72}
-                    y={slot.y - 26}
+                    y={slot.y - 24}
                     width={144}
                     align="center"
                   />
@@ -623,7 +630,6 @@ const CanvasTable = ({
             </Group>
           )}
 
-          {/* Guest initial or plus icon for empty slots */}
           {slot.guest ? (
             <Text
               text={slot.guest.charAt(0).toUpperCase()}

@@ -18,22 +18,22 @@ const LandingHeader = ({ onShowHelp, onFileUpload, onLoadProject, totalGuests })
   };
 
   const downloadSampleCSV = () => {
-    const csvContent = `Name
-John Smith
-Jane Doe
-Mike Johnson
-Sarah Wilson
-Emily Brown
-David Lee
-Lisa Garcia
-Tom Anderson
-Amy Taylor
-Chris Martin
-Jessica White
-Ryan Clark
-Maria Rodriguez
-Kevin Thompson
-Rachel Green`;
+    const csvContent = `Name,Group
+John Smith,Bridal Party
+Jane Doe,Bridal Party
+Mike Johnson,Family
+Sarah Wilson,College Friends
+Emily Brown,Family
+David Lee,Work
+Lisa Garcia,Friends
+Tom Anderson,College Friends
+Amy Taylor,Bridal Party
+Chris Martin,Work
+Jessica White,Friends
+Ryan Clark,Family
+Maria Rodriguez,Neighbors
+Kevin Thompson,Work
+Rachel Green,College Friends`;
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);

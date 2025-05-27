@@ -5,10 +5,10 @@ const WelcomeModal = ({ isOpen, onClose }) => {
 
   const steps = [
     {
-      title: "Welcome to SeatSaver! 🎉",
+      title: "Welcome to Wedding Seating Chart! 🎉",
       content: (
         <div>
-          <p>Save your sanity with SeatSaver - the stress-free wedding seating chart tool!</p>
+          <p>Plan your perfect wedding seating arrangement with our easy-to-use visual tool.</p>
           <h5>What you can do:</h5>
           <ul>
             <li>📝 Import your guest list from CSV</li>
@@ -26,7 +26,7 @@ const WelcomeModal = ({ isOpen, onClose }) => {
       title: "Step 1: Prepare Your Guest List 📋",
       content: (
         <div>
-          <p>Create a CSV file with your guest names. Here's the format:</p>
+          <p>Create a CSV file with your guest names and optional groups. Here's the format:</p>
           <div style={{ 
             backgroundColor: '#f8f9fa', 
             padding: '1rem', 
@@ -34,17 +34,19 @@ const WelcomeModal = ({ isOpen, onClose }) => {
             fontFamily: 'monospace',
             margin: '1rem 0'
           }}>
-            Name<br/>
-            John Smith<br/>
-            Jane Doe<br/>
-            Mike Johnson<br/>
-            Sarah Wilson
+            Name,Group<br/>
+            John Smith,Bridal Party<br/>
+            Jane Doe,Family<br/>
+            Mike Johnson,Friends<br/>
+            Sarah Wilson,Work
           </div>
           <p><strong>Tips:</strong></p>
           <ul>
-            <li>First row should be "Name" (header)</li>
+            <li>First row should be "Name,Group" (headers)</li>
+            <li>Group column is <strong>optional</strong> - you can just use "Name"</li>
             <li>One guest per row</li>
-            <li>Include couples as separate entries if needed</li>
+            <li>Common groups: Bridal Party, Family, Friends, Work, College</li>
+            <li>You can assign groups later in the app too!</li>
             <li>Save as .csv format from Excel or Google Sheets</li>
           </ul>
           <button 
@@ -118,8 +120,8 @@ const WelcomeModal = ({ isOpen, onClose }) => {
           <h5>Save your work:</h5>
           <ul>
             <li><strong>Auto-save:</strong> Layout saves automatically to your browser</li>
-            <li><strong>Save Project:</strong> Download complete project file (.json)</li>
-            <li><strong>Load Project:</strong> Resume from saved project file</li>
+            <li><strong>Save State:</strong> Download complete project file (.json)</li>
+            <li><strong>Load State:</strong> Resume from saved project file</li>
           </ul>
 
           <h5>Export options:</h5>
@@ -144,22 +146,22 @@ const WelcomeModal = ({ isOpen, onClose }) => {
   ];
 
   const downloadSampleCSV = () => {
-    const csvContent = `Name
-John Smith
-Jane Doe
-Mike Johnson
-Sarah Wilson
-Emily Brown
-David Lee
-Lisa Garcia
-Tom Anderson
-Amy Taylor
-Chris Martin
-Jessica White
-Ryan Clark
-Maria Rodriguez
-Kevin Thompson
-Rachel Green`;
+    const csvContent = `Name,Group
+John Smith,Bridal Party
+Jane Doe,Bridal Party
+Mike Johnson,Family
+Sarah Wilson,College Friends
+Emily Brown,Family
+David Lee,Work
+Lisa Garcia,Friends
+Tom Anderson,College Friends
+Amy Taylor,Bridal Party
+Chris Martin,Work
+Jessica White,Friends
+Ryan Clark,Family
+Maria Rodriguez,Neighbors
+Kevin Thompson,Work
+Rachel Green,College Friends`;
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);

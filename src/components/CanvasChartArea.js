@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Stage, Layer, Group, Rect, Text, Circle, Line } from 'react-konva';
 import CanvasTable from './CanvasTable';
 
-const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, layoutData, onAddGuest })=> {
+const CanvasChartArea = ({ assignments, allGuests = [], onRemoveGuest, onDrop, onLayoutChange, layoutData, onAddGuest })=> {
   const stageRef = useRef();
   const isLoadingRef = useRef(false);
   const saveTimeoutRef = useRef(null);
@@ -835,6 +835,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
                     x={position.x}
                     y={position.y}
                     assignments={assignments}
+                    allGuests={allGuests}
                     onDragStart={handleTableDragStart}
                     onDragEnd={handleTableDragEnd}
                     onTableClick={handleTableClick}
@@ -842,7 +843,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
                     onAddGuest={onAddGuest}
                     isHighlighted={dragOverTable === tableId}
                     isSelected={selectedTable === tableId}
-/>
+                  />
                 ))}
               </Layer>
             </Stage>
@@ -1167,6 +1168,58 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
               </div>
               
               {/* Action Buttons */}
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <button 
+          onClick={() => onApply(tableId, config)}
+          style={{
+            flex: 1,
+            padding: '0.75rem',
+            border: 'none',
+            borderRadius: '8px',
+            backgroundColor: '#fd7e14',
+            color: '#ffffff',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '0.9rem',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = '#e8690b'}
+          onMouseOut={(e) => e.target.style.backgroundColor = '#fd7e14'}
+        >
+          ✅ Apply Changes
+        </button>
+        
+        <button 
+          onClick={onCancel}
+          style={{
+            flex: 1,
+            padding: '0.75rem',
+            border: '2px solid #6c757d',
+            borderRadius: '8px',
+            backgroundColor: '#ffffff',
+            color: '#6c757d',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '0.9rem',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            e.target.style.backgroundColor = '#6c757d';
+            e.target.style.color = '#ffffff';
+          }}
+          onMouseOut={(e) => {
+            e.target.style.backgroundColor = '#ffffff';
+            e.target.style.color = '#6c757d';
+          }}
+        >
+          ❌ Cancel
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default CanvasChartArea;
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <button 
                   onClick={() => handleEditLabel(selectedTable)} 
@@ -1584,55 +1637,3 @@ const CustomizationForm = ({ tableId, currentConfig, onApply, onCancel, assignme
       </div>
       
       {/* Action Buttons */}
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <button 
-          onClick={() => onApply(tableId, config)}
-          style={{
-            flex: 1,
-            padding: '0.75rem',
-            border: 'none',
-            borderRadius: '8px',
-            backgroundColor: '#fd7e14',
-            color: '#ffffff',
-            cursor: 'pointer',
-            fontWeight: '600',
-            fontSize: '0.9rem',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseOver={(e) => e.target.style.backgroundColor = '#e8690b'}
-          onMouseOut={(e) => e.target.style.backgroundColor = '#fd7e14'}
-        >
-          ✅ Apply Changes
-        </button>
-        
-        <button 
-          onClick={onCancel}
-          style={{
-            flex: 1,
-            padding: '0.75rem',
-            border: '2px solid #6c757d',
-            borderRadius: '8px',
-            backgroundColor: '#ffffff',
-            color: '#6c757d',
-            cursor: 'pointer',
-            fontWeight: '600',
-            fontSize: '0.9rem',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseOver={(e) => {
-            e.target.style.backgroundColor = '#6c757d';
-            e.target.style.color = '#ffffff';
-          }}
-          onMouseOut={(e) => {
-            e.target.style.backgroundColor = '#ffffff';
-            e.target.style.color = '#6c757d';
-          }}
-        >
-          ❌ Cancel
-        </button>
-      </div>
-    </div>
-  );
-};
-
-export default CanvasChartArea;

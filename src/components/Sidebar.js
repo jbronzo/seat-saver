@@ -3,8 +3,12 @@ import GuestListItem from './GuestListItem';
 
 const Sidebar = ({
   filteredGuests,
+  allGuests,
   searchTerm,
   setSearchTerm,
+  selectedGroup,
+  setSelectedGroup,
+  availableGroups,
   visibleCount,
   unassignedCount,
   assignedGuests,
@@ -14,10 +18,56 @@ const Sidebar = ({
   onLoadState,
   onExport,
   onDragStart,
-  onShowHelp // New prop for showing help modal
+  onShowHelp,
+  onAssignGroup
 }) => {
   const fileInputRef = useRef(null);
   const loadStateRef = useRef(null);
+
+  // Helper function to get group icons
+  const getGroupIcon = (group) => {
+    // Safety check for undefined/null group
+    if (!group) return '📝';
+    
+    const groupIcons = {
+      'Bridal Party': '🌹',
+      'Family': '👨‍👩‍👧‍👦',
+      'Friends': '🎓',
+      'Work': '💼',
+      'College': '🎓',
+      'High School': '🏫',
+      'Neighbors': '🏠',
+      'Plus Ones': '➕',
+      'Unassigned': '📝'
+    };
+    
+    // Try exact match first
+    if (groupIcons[group]) return groupIcons[group];
+    
+    // Try partial matches
+    const lowerGroup = group.toLowerCase();
+    if (lowerGroup.includes('family')) return '👨‍👩‍👧‍👦';
+    if (lowerGroup.includes('friend')) return '🎓';
+    if (lowerGroup.includes('work') || lowerGroup.includes('colleague')) return '💼';
+    if (lowerGroup.includes('bridal') || lowerGroup.includes('wedding')) return '🌹';
+    if (lowerGroup.includes('college') || lowerGroup.includes('university')) return '🎓';
+    if (lowerGroup.includes('school')) return '🏫';
+    
+    return '👥'; // Default group icon
+  };
+
+  // Handle bulk group creation (creates empty groups for assignment)
+  const handleCreateGroupForAssignment = (groupName) => {
+    // This will create the group when the first guest is assigned to it
+    // For now, we'll just show an alert explaining how to use it
+    alert(
+      `To create and use the "${groupName}" group:\n\n` +
+      `1. Click on any guest's group badge below\n` +
+      `2. Select "➕ New Group" or find "${groupName}" in the list\n` +
+      `3. If creating new, enter "${groupName}" as the group name\n\n` +
+      `Groups are created automatically when you assign the first guest to them.`
+    );
+  };
 
   return (
     <div className="sidebar">
@@ -149,7 +199,7 @@ const Sidebar = ({
         <small className="text-muted">Save complete project with layout</small>
       </div>
 
-      {/* Guest Search */}
+      {/* Guest Search & Group Filter */}
       <div className="mb-3">
         <h6 style={{ 
           display: 'flex', 
@@ -159,6 +209,8 @@ const Sidebar = ({
         }}>
           👥 Guest List
         </h6>
+        
+        {/* Search Input */}
         <div className="input-group mb-2">
           <input
             type="text"
@@ -176,6 +228,210 @@ const Sidebar = ({
             ✕
           </button>
         </div>
+
+        {/* Group Filter Dropdown */}
+        {availableGroups && availableGroups.length > 1 && (
+          <div style={{ marginBottom: '0.75rem' }}>
+            <select
+              className="form-control"
+              value={selectedGroup}
+              onChange={(e) => setSelectedGroup(e.target.value)}
+              style={{
+                fontSize: '0.85rem',
+                padding: '0.5rem',
+                backgroundColor: selectedGroup !== 'All' ? '#e7f3ff' : '#ffffff',
+                borderColor: selectedGroup !== 'All' ? '#0d6efd' : '#ced4da'
+              }}
+            >
+              {availableGroups.map(group => (
+                <option key={group} value={group}>
+                  {group === 'All' ? '👥 All Groups' : `${getGroupIcon(group)} ${group}`}
+                </option>
+              ))}
+            </select>
+            {selectedGroup !== 'All' && (
+              <small style={{ 
+                display: 'block', 
+                marginTop: '0.25rem', 
+                color: '#0d6efd',
+                fontSize: '0.75rem'
+              }}>
+                Showing {selectedGroup} group • {filteredGuests.length} guests
+              </small>
+            )}
+          </div>
+        )}
+
+        {/* Group Management - Improved and Clearer */}
+        {totalGuests > 0 && (
+          <div style={{ 
+            marginBottom: '0.75rem',
+            padding: '0.75rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '6px',
+            border: '1px solid #e9ecef'
+          }}>
+            <div style={{ 
+              fontSize: '0.8rem', 
+              fontWeight: '600', 
+              marginBottom: '0.5rem',
+              color: '#495057'
+            }}>
+              🏷️ Group Management
+            </div>
+            
+            {/* Instructions */}
+            <div style={{ 
+              fontSize: '0.75rem', 
+              color: '#6c757d', 
+              marginBottom: '0.75rem',
+              lineHeight: '1.4'
+            }}>
+              <strong>To assign groups:</strong><br />
+              Click any guest's colored group badge below to assign them to a group.
+            </div>
+            
+            {/* Show current groups if any exist */}
+            {availableGroups && availableGroups.length > 2 && (
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ 
+                  fontSize: '0.75rem', 
+                  fontWeight: '600', 
+                  marginBottom: '0.5rem',
+                  color: '#495057',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>📊 Your Groups:</span>
+                  <span style={{ 
+                    fontSize: '0.7rem',
+                    background: '#28a745',
+                    color: 'white',
+                    padding: '0.1rem 0.4rem',
+                    borderRadius: '10px',
+                    fontWeight: 'normal'
+                  }}>
+                    {availableGroups.length - 1} {/* Subtract 1 for 'All' */}
+                  </span>
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '0.25rem'
+                }}>
+                  {availableGroups
+                    .filter(group => group !== 'All')
+                    .map(group => {
+                      const guestCount = allGuests.filter(g => g.Group === group).length;
+                      return (
+                        <span
+                          key={group}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            fontSize: '0.7rem',
+                            padding: '0.25rem 0.5rem',
+                            backgroundColor: group === 'Unassigned' ? '#fff3cd' : '#e7f3ff',
+                            color: group === 'Unassigned' ? '#856404' : '#0d6efd',
+                            borderRadius: '12px',
+                            border: `1px solid ${group === 'Unassigned' ? '#ffeaa7' : '#b3d7ff'}`
+                          }}
+                          title={`${guestCount} guests in ${group}`}
+                        >
+                          {getGroupIcon(group)} {group} ({guestCount})
+                        </span>
+                      );
+                    })
+                  }
+                </div>
+              </div>
+            )}
+            
+            {/* Create new group section */}
+            <div style={{
+              padding: '0.75rem',
+              backgroundColor: 'white',
+              borderRadius: '6px',
+              border: '2px dashed #dee2e6',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                color: '#495057',
+                marginBottom: '0.5rem'
+              }}>
+                ➕ Need a New Group?
+              </div>
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#6c757d',
+                marginBottom: '0.75rem',
+                lineHeight: '1.4'
+              }}>
+                Click any guest's group badge and select "New Group" to create custom groups like:
+              </div>
+              
+              {/* Examples as text, not buttons */}
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                fontSize: '0.7rem',
+                color: '#6c757d'
+              }}>
+                <span>🌹 Bridal Party</span>
+                <span>👨‍👩‍👧‍👦 Family</span>
+                <span>🎓 Friends</span>
+                <span>💼 Work</span>
+                <span>🏠 Neighbors</span>
+                <span>➕ Plus Ones</span>
+              </div>
+            </div>
+            
+            {/* Quick action if no groups exist yet */}
+            {(!availableGroups || availableGroups.length <= 2) && (
+              <div style={{
+                marginTop: '0.75rem',
+                padding: '0.5rem',
+                backgroundColor: '#e7f3ff',
+                borderRadius: '6px',
+                border: '1px solid #b3d7ff',
+                textAlign: 'center'
+              }}>
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: '#0d6efd',
+                  fontWeight: '600',
+                  marginBottom: '0.25rem'
+                }}>
+                  💡 Get Started
+                </div>
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: '#495057'
+                }}>
+                  Click on any guest's{' '}
+                  <span style={{
+                    display: 'inline-block',
+                    backgroundColor: '#bdc3c7',
+                    color: 'white',
+                    padding: '0.1rem 0.3rem',
+                    borderRadius: '8px',
+                    margin: '0 0.25rem',
+                    fontSize: '0.65rem'
+                  }}>
+                    📝 Unassigned
+                  </span>
+                  badge to create your first group!
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Guest Statistics */}
         <div style={{ 
@@ -216,8 +472,10 @@ const Sidebar = ({
               {filteredGuests.map((guest, index) => (
                 <GuestListItem
                   key={index}
-                  guest={guest.Name}
+                  guest={guest}
                   onDragStart={onDragStart}
+                  onAssignGroup={onAssignGroup}
+                  availableGroups={availableGroups}
                 />
               ))}
             </ul>
@@ -234,10 +492,11 @@ const Sidebar = ({
                   <div>No guests loaded</div>
                   <small>Upload a CSV file to get started</small>
                 </div>
-              ) : searchTerm ? (
+              ) : searchTerm || selectedGroup !== 'All' ? (
                 <div>
                   <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</div>
-                  <div>No guests match "{searchTerm}"</div>
+                  <div>No guests match your filters</div>
+                  <small>Try different search terms or group</small>
                 </div>
               ) : (
                 <div>
@@ -299,6 +558,7 @@ const Sidebar = ({
         </div>
         <div style={{ color: '#495057' }}>
           • <strong>Drag guests</strong> from here to table seats<br />
+          • <strong>Click group badges</strong> to change guest groups<br />
           • <strong>Right-click empty seats</strong> to add new guests<br />
           • <strong>Double-click tables</strong> to customize them<br />
           • <strong>Save regularly</strong> to preserve your work
