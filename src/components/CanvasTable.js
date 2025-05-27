@@ -182,31 +182,31 @@ const CanvasTable = ({
   };
 
   const handleInfoClick = (e) => {
-    setIsClickingInfo(true);
+  setIsClickingInfo(true);
+  
+  e.cancelBubble = true;
+  if (e.evt && e.evt.stopPropagation) {
+    e.evt.stopPropagation();
+  }
+  if (e.evt && e.evt.preventDefault) {
+    e.evt.preventDefault();
+  }
+  
+  if (guestCount === 0) {
+    alert(`${tableLabel} is empty.\nCapacity: ${capacity} guests\n\nNo guests have been assigned to this table yet.`);
+  } else {
+    // Format guest list with groups
+    const guestDetails = guestList
+      .map(guest => `${guest.name} - ${guest.group || 'Unknown Group'}`)
+      .join('\n');
     
-    e.cancelBubble = true;
-    if (e.evt && e.evt.stopPropagation) {
-      e.evt.stopPropagation();
-    }
-    if (e.evt && e.evt.preventDefault) {
-      e.evt.preventDefault();
-    }
-    
-    if (guestCount === 0) {
-      alert(`${tableLabel} is empty.\nCapacity: ${capacity} guests\n\nNo guests have been assigned to this table yet.`);
-    } else {
-      // Format guest list with groups
-      const guestDetails = guestList
-        .map(guest => `${guest.name} - ${guest.group}`)
-        .join('\n');
-      
-      alert(`${tableLabel} guests (${guestCount}/${capacity}):\n\n${guestDetails}`);
-    }
-    
-    setTimeout(() => {
-      setIsClickingInfo(false);
-    }, 100);
-  };
+    alert(`${tableLabel} guests (${guestCount}/${capacity}):\n\n${guestDetails}`);
+  }
+  
+  setTimeout(() => {
+    setIsClickingInfo(false);
+  }, 100);
+};
 
   const handleTableDoubleClick = (e) => {
     setIsDoubleClicking(true);
