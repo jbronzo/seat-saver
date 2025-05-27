@@ -9,8 +9,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
   const [nextTableId, setNextTableId] = useState(17);
   
   // ALL STATE VARIABLES DECLARED FIRST
-  const [stageSize] = useState({ width: 1200, height: 800 });
-  const [isMobile, setIsMobile] = useState(false);
+  const [stageSize, setStageSize] = useState({ width: 1200, height: 800 });
   const [zoom, setZoom] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const [isDraggingTable, setIsDraggingTable] = useState(false);
@@ -53,6 +52,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
   // UI States
   const [showCustomizationPanel, setShowCustomizationPanel] = useState(false);
   const [customizingTableId, setCustomizingTableId] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Helper function to get table label (custom or default)
   const getTableLabel = (tableId) => {
@@ -141,7 +141,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
       }
     };
       }, [tablePositions, tableLabels, tableConfigs, danceFloorPos, danceFloorSize, zoom, stagePos, nextTableId, isDraggingTable, onLayoutChange]);
-  React.useEffect(() => {
+      React.useEffect(() => {
   const checkMobile = () => {
     const mobile = window.innerWidth <= 768;
     setIsMobile(mobile);
@@ -161,6 +161,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
   window.addEventListener('resize', checkMobile);
   return () => window.removeEventListener('resize', checkMobile);
 }, []);
+
   // HELPER FUNCTIONS
   const snapToGrid = (pos) => ({
     x: Math.round(pos.x / 20) * 20,
@@ -939,14 +940,16 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
-          <div
+          <div 
             style={{ 
               border: '2px dashed #ddd', 
               borderRadius: '8px', 
               overflow: 'hidden',
               borderColor: dragOverTable ? '#0d6efd' : '#ddd',
               backgroundColor: dragOverTable ? 'rgba(13, 110, 253, 0.05)' : 'transparent',
-              cursor: showAddTableMode ? 'crosshair' : 'default'
+              cursor: showAddTableMode ? 'crosshair' : 'default',
+              width: '100%',
+              height: isMobile ? 'calc(100% - 20px)' : 'auto'
             }}
           >
             <Stage

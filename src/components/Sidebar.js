@@ -19,7 +19,10 @@ const Sidebar = ({
   onExport,
   onDragStart,
   onShowHelp,
-  onAssignGroup
+  onAssignGroup,
+  onDrop,              // ADD THIS
+  availableTableList,  // ADD THIS
+  assignments 
 }) => {
   const fileInputRef = useRef(null);
   const loadStateRef = useRef(null);
