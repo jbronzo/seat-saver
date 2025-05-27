@@ -1,11 +1,19 @@
 import React from 'react';
 
-const LandingHeader = ({ onShowHelp, onFileUpload, totalGuests }) => {
+const LandingHeader = ({ onShowHelp, onFileUpload, onLoadProject, totalGuests }) => {
   const triggerFileInput = () => {
-    // Trigger the hidden file input
+    // Trigger the hidden CSV file input
     const fileInput = document.querySelector('input[type="file"][accept=".csv"]');
     if (fileInput) {
       fileInput.click();
+    }
+  };
+
+  const triggerLoadProject = () => {
+    // Trigger the hidden project file input
+    const loadInput = document.querySelector('input[type="file"][accept=".json"]');
+    if (loadInput) {
+      loadInput.click();
     }
   };
 
@@ -151,44 +159,84 @@ Rachel Green`;
           </div>
         </div>
 
-        {/* Call to Action Buttons */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1rem',
-          alignItems: 'center'
-        }}>
-          {/* Primary CTA */}
-          <button
-            onClick={triggerFileInput}
-            style={{
-              backgroundColor: '#667eea',
-              color: 'white',
-              border: 'none',
-              padding: '1rem 2rem',
-              fontSize: '1.1rem',
-              fontWeight: '600',
-              borderRadius: '50px',
+        {/* Getting Started Section */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{
+            fontSize: '1.25rem',
+            fontWeight: '600',
+            color: '#495057',
+            marginBottom: '1rem'
+          }}>
+            Choose how to get started:
+          </h3>
+          
+          {/* Primary Options */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '1rem',
+            marginBottom: '1.5rem'
+          }}>
+            {/* Start Fresh */}
+            <div style={{
+              padding: '1.5rem',
+              border: '2px solid #667eea',
+              borderRadius: '16px',
+              backgroundColor: '#f8f9ff',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
-              minWidth: '200px'
+              transition: 'all 0.3s ease'
             }}
+            onClick={triggerFileInput}
             onMouseOver={(e) => {
-              e.target.style.backgroundColor = '#5a67d8';
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+              e.currentTarget.style.backgroundColor = '#667eea';
+              e.currentTarget.style.color = 'white';
             }}
             onMouseOut={(e) => {
-              e.target.style.backgroundColor = '#667eea';
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.3)';
+              e.currentTarget.style.backgroundColor = '#f8f9ff';
+              e.currentTarget.style.color = 'inherit';
             }}
-          >
-            📁 Upload Guest List
-          </button>
+            >
+              <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🆕</div>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
+                Start Fresh
+              </h4>
+              <p style={{ fontSize: '0.9rem', margin: 0, opacity: 0.8 }}>
+                Upload your guest list CSV and create a new seating chart from scratch
+              </p>
+            </div>
 
-          {/* Secondary CTAs */}
+            {/* Resume Project */}
+            <div style={{
+              padding: '1.5rem',
+              border: '2px solid #28a745',
+              borderRadius: '16px',
+              backgroundColor: '#f8fff9',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onClick={triggerLoadProject}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#28a745';
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#f8fff9';
+              e.currentTarget.style.color = 'inherit';
+            }}
+            >
+              <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📂</div>
+              <h4 style={{ fontSize: '1.1rem', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
+                Resume Project
+              </h4>
+              <p style={{ fontSize: '0.9rem', margin: 0, opacity: 0.8 }}>
+                Load a saved SeatSaver project file to continue where you left off
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Secondary Actions */}
+        <div style={{ marginBottom: '2rem' }}>
           <div style={{
             display: 'flex',
             gap: '1rem',
@@ -280,12 +328,12 @@ Rachel Green`;
               font-size: 2rem !important;
             }
             
-            .feature-grid {
+            .primary-options {
               grid-template-columns: 1fr !important;
               gap: 0.75rem !important;
             }
             
-            .cta-buttons {
+            .secondary-buttons {
               flex-direction: column !important;
             }
             

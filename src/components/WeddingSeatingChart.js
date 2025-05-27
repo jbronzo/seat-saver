@@ -178,6 +178,7 @@ const WeddingSeatingChart = () => {
       <LandingHeader 
         onShowHelp={handleShowHelp}
         onFileUpload={handleFileUpload}
+        onLoadProject={handleLoadState}
         totalGuests={totalGuests}
       />
       
