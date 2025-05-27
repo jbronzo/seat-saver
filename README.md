@@ -44,7 +44,7 @@ SeatSaver is a free, web-based wedding seating chart tool that helps couples pla
 
 ### For Wedding Couples
 
-1. **Visit [SeatSaver](https://your-vercel-url.vercel.app)**
+1. **Visit [SeatSaver](https://seat-saver.vercel.app/)**
 2. **Upload your guest list** (CSV format) or use our sample
 3. **Drag guests** from the sidebar to table seats
 4. **Customize tables** by double-clicking them
