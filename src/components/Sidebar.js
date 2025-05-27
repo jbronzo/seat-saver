@@ -404,12 +404,15 @@ const Sidebar = ({
             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
               {filteredGuests.map((guest, index) => (
                 <GuestListItem
-                  key={index}
-                  guest={guest}
-                  onDragStart={onDragStart}
-                  onAssignGroup={onAssignGroup}
-                  availableGroups={availableGroups}
-                />
+                    key={index}
+                    guest={guest}
+                    onDragStart={onDragStart}
+                    onAssignGroup={onAssignGroup}
+                    onDrop={onDrop} // Add this
+                    availableGroups={availableGroups}
+                    availableTableList={availableTableList} // Add this
+                    assignments={assignments} // Add this
+                  />
               ))}
             </ul>
           ) : (

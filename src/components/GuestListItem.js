@@ -1,12 +1,169 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+// Mobile Table Assignment Modal Component
+const MobileTableAssignment = ({ 
+  guest, 
+  isOpen, 
+  onClose, 
+  onAssign, 
+  availableTables = [], 
+  assignments = [] 
+}) => {
+  if (!isOpen) return null;
+
+  // Calculate available spaces for each table
+  const tableOptions = availableTables.map(table => {
+    const currentGuests = assignments.filter(a => a.table === table.id).length;
+    const available = table.capacity - currentGuests;
+    return {
+      ...table,
+      currentGuests,
+      available,
+      isFull: available <= 0
+    };
+  }).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'flex-end',
+      justifyContent: 'center',
+      zIndex: 9999,
+      padding: '1rem'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '20px 20px 0 0',
+        width: '100%',
+        maxWidth: '400px',
+        maxHeight: '70vh',
+        overflow: 'hidden'
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '1.5rem 1.5rem 1rem 1.5rem',
+          borderBottom: '1px solid #dee2e6',
+          textAlign: 'center'
+        }}>
+          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>
+            Assign {guest.Name}
+          </h3>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#6c757d' }}>
+            Choose a table for this guest
+          </p>
+        </div>
+
+        {/* Table List */}
+        <div style={{
+          maxHeight: '400px',
+          overflowY: 'auto',
+          padding: '1rem'
+        }}>
+          {tableOptions.map(table => (
+            <button
+              key={table.id}
+              onClick={() => table.isFull ? null : onAssign(guest.Name, table.id)}
+              disabled={table.isFull}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                marginBottom: '0.75rem',
+                border: table.isFull ? '2px solid #e9ecef' : '2px solid #28a745',
+                borderRadius: '12px',
+                backgroundColor: table.isFull ? '#f8f9fa' : 'white',
+                cursor: table.isFull ? 'not-allowed' : 'pointer',
+                textAlign: 'left',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                transition: 'all 0.2s ease',
+                opacity: table.isFull ? 0.5 : 1
+              }}
+            >
+              <div>
+                <div style={{ 
+                  fontWeight: '600', 
+                  fontSize: '1rem',
+                  color: table.isFull ? '#6c757d' : '#495057'
+                }}>
+                  {table.label || `Table ${table.id}`}
+                </div>
+                <div style={{ 
+                  fontSize: '0.85rem', 
+                  color: '#6c757d',
+                  marginTop: '0.25rem'
+                }}>
+                  {table.currentGuests}/{table.capacity} guests
+                  {table.isFull && ' • Full'}
+                </div>
+              </div>
+              
+              {!table.isFull && (
+                <div style={{
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '20px',
+                  fontSize: '0.85rem',
+                  fontWeight: '600'
+                }}>
+                  Assign
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Cancel Button */}
+        <div style={{ padding: '1rem' }}>
+          <button
+            onClick={onClose}
+            style={{
+              width: '100%',
+              padding: '1rem',
+              border: '2px solid #6c757d',
+              borderRadius: '12px',
+              backgroundColor: 'white',
+              color: '#6c757d',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const GuestListItem = ({ 
   guest, 
   onDragStart, 
   onAssignGroup = () => console.warn('onAssignGroup not provided'), 
-  availableGroups = [] 
+  onDrop = () => console.warn('onDrop not provided'),
+  availableGroups = [],
+  availableTableList = [],
+  assignments = []
 }) => {
   const [showGroupModal, setShowGroupModal] = useState(false);
+  const [showTableAssignment, setShowTableAssignment] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Safety check for guest object
   if (!guest || !guest.Name) {
@@ -19,9 +176,18 @@ const GuestListItem = ({
   // Ensure availableGroups is an array and filter out 'All'
   const safeAvailableGroups = Array.isArray(availableGroups) ? availableGroups.filter(g => g !== 'All') : ['Unassigned'];
 
-  // Handle drag start
+  // Handle drag start (disabled on mobile)
   const handleDragStart = (e) => {
-    onDragStart(e, guest.Name, null);
+    if (!isMobile) {
+      onDragStart(e, guest.Name, null);
+    }
+  };
+
+  // Handle mobile assignment
+  const handleMobileAssignment = () => {
+    if (isMobile) {
+      setShowTableAssignment(true);
+    }
   };
 
   // Handle direct group click to show modal
@@ -51,6 +217,12 @@ const GuestListItem = ({
         setShowGroupModal(false);
       }
     }
+  };
+
+  // Handle mobile table assignment
+  const handleTableAssign = (guestName, tableId) => {
+    onDrop({ name: guestName }, tableId);
+    setShowTableAssignment(false);
   };
 
   // Group color mapping
@@ -103,17 +275,19 @@ const GuestListItem = ({
   return (
     <>
       <li
-        draggable
-        onDragStart={handleDragStart}
+        draggable={!isMobile}
+        onDragStart={isMobile ? undefined : handleDragStart}
+        onClick={isMobile ? handleMobileAssignment : undefined}
         style={{
           padding: '0.75rem',
           marginBottom: '0.25rem',
           backgroundColor: 'white',
           border: '1px solid #dee2e6',
           borderRadius: '6px',
-          cursor: 'grab',
+          cursor: isMobile ? 'pointer' : 'grab',
           transition: 'all 0.2s ease',
-          borderLeft: `4px solid ${getGroupColor(guestGroup)}`
+          borderLeft: `4px solid ${getGroupColor(guestGroup)}`,
+          minHeight: isMobile ? '48px' : 'auto'
         }}
         onMouseEnter={(e) => {
           e.target.style.backgroundColor = '#f8f9fa';
@@ -135,9 +309,25 @@ const GuestListItem = ({
               fontWeight: '600',
               fontSize: '0.9rem',
               color: '#495057',
-              marginBottom: '0.25rem'
+              marginBottom: '0.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
             }}>
-              {guest.Name}
+              <span>{guest.Name}</span>
+              {isMobile && (
+                <span style={{
+                  fontSize: '0.7rem',
+                  color: '#28a745',
+                  fontWeight: 'normal',
+                  backgroundColor: '#d4edda',
+                  padding: '0.15rem 0.4rem',
+                  borderRadius: '8px',
+                  border: '1px solid #c3e6cb'
+                }}>
+                  Tap to assign →
+                </span>
+              )}
             </div>
             
             {/* Clickable Group Badge */}
@@ -376,6 +566,18 @@ const GuestListItem = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Mobile Table Assignment Modal */}
+      {showTableAssignment && (
+        <MobileTableAssignment
+          guest={guest}
+          isOpen={showTableAssignment}
+          onClose={() => setShowTableAssignment(false)}
+          onAssign={handleTableAssign}
+          availableTables={availableTableList}
+          assignments={assignments}
+        />
       )}
     </>
   );

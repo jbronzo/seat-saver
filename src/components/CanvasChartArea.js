@@ -10,6 +10,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
   
   // ALL STATE VARIABLES DECLARED FIRST
   const [stageSize] = useState({ width: 1200, height: 800 });
+  const [isMobile, setIsMobile] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const [isDraggingTable, setIsDraggingTable] = useState(false);
@@ -140,7 +141,26 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
       }
     };
       }, [tablePositions, tableLabels, tableConfigs, danceFloorPos, danceFloorSize, zoom, stagePos, nextTableId, isDraggingTable, onLayoutChange]);
+  React.useEffect(() => {
+  const checkMobile = () => {
+    const mobile = window.innerWidth <= 768;
+    setIsMobile(mobile);
+    
+    // Update stage size based on screen
+    if (mobile) {
+      setStageSize({ 
+        width: Math.max(window.innerWidth - 32, 300), 
+        height: Math.max(window.innerHeight * 0.5, 300) 
+      });
+    } else {
+      setStageSize({ width: 1200, height: 800 });
+    }
+  };
 
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  return () => window.removeEventListener('resize', checkMobile);
+}, []);
   // HELPER FUNCTIONS
   const snapToGrid = (pos) => ({
     x: Math.round(pos.x / 20) * 20,
