@@ -695,6 +695,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
               onWheel={handleWheel}
               onClick={handleCanvasClick}
               onMouseMove={handleMouseMove}
+              perfectDrawEnabled={false}
             >
               <Layer>
                 <Rect
