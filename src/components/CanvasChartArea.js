@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Stage, Layer, Group, Rect, Text, Circle, Line } from 'react-konva';
 import CanvasTable from './CanvasTable';
 
-const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, layoutData, onAddGuest })=> {
+const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, layoutData, onAddGuest, allGuests })=> {
   const stageRef = useRef();
   const isLoadingRef = useRef(false);
   const saveTimeoutRef = useRef(null);
@@ -835,6 +835,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
                     x={position.x}
                     y={position.y}
                     assignments={assignments}
+                    allGuests={allGuests}
                     onDragStart={handleTableDragStart}
                     onDragEnd={handleTableDragEnd}
                     onTableClick={handleTableClick}

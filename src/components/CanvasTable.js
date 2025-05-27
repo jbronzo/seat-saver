@@ -192,6 +192,11 @@ const CanvasTable = ({
     e.evt.preventDefault();
   }
   
+  // Add debugging
+  console.log('All guests:', allGuests);
+  console.log('Guest list for table:', guestList);
+  console.log('Assignments:', assignments.filter(a => a.table === tableId));
+  
   if (guestCount === 0) {
     alert(`${tableLabel} is empty.\nCapacity: ${capacity} guests\n\nNo guests have been assigned to this table yet.`);
   } else {
