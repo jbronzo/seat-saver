@@ -1,18 +1,40 @@
-import React, { useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const LandingHeader = ({ onShowHelp, onFileUpload, onLoadProject, totalGuests }) => {
-  // Create our own file input refs since sidebar inputs aren't available
-  const csvFileInputRef = useRef(null);
-  const projectFileInputRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Mobile detection
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const triggerFileInput = () => {
-    // Trigger our own CSV file input
-    csvFileInputRef.current?.click();
+    // Create a temporary CSV file input
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.csv';
+    fileInput.style.display = 'none';
+    fileInput.addEventListener('change', onFileUpload);
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    // Clean up after use
+    setTimeout(() => document.body.removeChild(fileInput), 100);
   };
 
   const triggerLoadProject = () => {
-    // Trigger our own project file input
-    projectFileInputRef.current?.click();
+    // Create a temporary project file input
+    const loadInput = document.createElement('input');
+    loadInput.type = 'file';
+    loadInput.accept = '.json';
+    loadInput.style.display = 'none';
+    loadInput.addEventListener('change', onLoadProject);
+    document.body.appendChild(loadInput);
+    loadInput.click();
+    // Clean up after use
+    setTimeout(() => document.body.removeChild(loadInput), 100);
   };
 
   const downloadSampleCSV = () => {
@@ -47,47 +69,36 @@ Rachel Green,College Friends`;
 
   return (
     <div style={{
-      position: 'absolute',
+      position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(248, 249, 250, 0.95)',
+      backgroundColor: 'rgba(248, 249, 250, 0.98)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 10,
-      backdropFilter: 'blur(2px)'
+      backdropFilter: 'blur(2px)',
+      padding: isMobile ? '0.5rem' : '1rem',
+      overflowY: 'auto'
     }}>
-      {/* Hidden file inputs */}
-      <input
-        type="file"
-        accept=".csv"
-        style={{ display: 'none' }}
-        ref={csvFileInputRef}
-        onChange={onFileUpload}
-      />
-      <input
-        type="file"
-        accept=".json"
-        style={{ display: 'none' }}
-        ref={projectFileInputRef}
-        onChange={onLoadProject}
-      />
-
       <div style={{
         textAlign: 'center',
-        maxWidth: '600px',
-        padding: '2rem',
+        maxWidth: isMobile ? '95vw' : '600px',
+        width: '100%',
+        maxHeight: isMobile ? '95vh' : '80vh',
+        overflowY: 'auto',
+        padding: isMobile ? '1rem' : '2rem',
         backgroundColor: 'white',
         borderRadius: '20px',
         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
         border: '1px solid #e9ecef'
       }}>
         {/* Logo/Title Section */}
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
           <div style={{
-            fontSize: '3rem',
+            fontSize: isMobile ? '2.5rem' : '3rem',
             marginBottom: '1rem',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             WebkitBackgroundClip: 'text',
@@ -98,7 +109,7 @@ Rachel Green,College Friends`;
             💺
           </div>
           <h1 style={{
-            fontSize: '2.5rem',
+            fontSize: isMobile ? '1.8rem' : '2.5rem',
             fontWeight: 'bold',
             margin: '0 0 0.5rem 0',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -109,7 +120,7 @@ Rachel Green,College Friends`;
             SeatSaver
           </h1>
           <p style={{
-            fontSize: '1.25rem',
+            fontSize: isMobile ? '1rem' : '1.25rem',
             color: '#6c757d',
             margin: 0,
             fontStyle: 'italic'
@@ -119,9 +130,9 @@ Rachel Green,College Friends`;
         </div>
 
         {/* Value Proposition */}
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
           <p style={{
-            fontSize: '1.1rem',
+            fontSize: isMobile ? '1rem' : '1.1rem',
             color: '#495057',
             lineHeight: '1.6',
             marginBottom: '1.5rem'
@@ -133,40 +144,52 @@ Rachel Green,College Friends`;
           {/* Feature highlights */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem',
-            marginBottom: '2rem'
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: isMobile ? '0.75rem' : '1rem',
+            marginBottom: isMobile ? '1.5rem' : '2rem'
           }}>
             <div style={{
-              padding: '1rem',
+              padding: isMobile ? '0.75rem' : '1rem',
               backgroundColor: '#f8f9fa',
               borderRadius: '12px',
               border: '1px solid #e9ecef'
             }}>
               <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🖱️</div>
-              <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#495057' }}>
+              <div style={{ 
+                fontWeight: '600', 
+                fontSize: isMobile ? '0.85rem' : '0.9rem', 
+                color: '#495057' 
+              }}>
                 Drag & Drop Simple
               </div>
             </div>
             <div style={{
-              padding: '1rem',
+              padding: isMobile ? '0.75rem' : '1rem',
               backgroundColor: '#f8f9fa',
               borderRadius: '12px',
               border: '1px solid #e9ecef'
             }}>
               <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎨</div>
-              <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#495057' }}>
+              <div style={{ 
+                fontWeight: '600', 
+                fontSize: isMobile ? '0.85rem' : '0.9rem', 
+                color: '#495057' 
+              }}>
                 Fully Customizable
               </div>
             </div>
             <div style={{
-              padding: '1rem',
+              padding: isMobile ? '0.75rem' : '1rem',
               backgroundColor: '#f8f9fa',
               borderRadius: '12px',
               border: '1px solid #e9ecef'
             }}>
               <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🔒</div>
-              <div style={{ fontWeight: '600', fontSize: '0.9rem', color: '#495057' }}>
+              <div style={{ 
+                fontWeight: '600', 
+                fontSize: isMobile ? '0.85rem' : '0.9rem', 
+                color: '#495057' 
+              }}>
                 100% Private
               </div>
             </div>
@@ -174,9 +197,9 @@ Rachel Green,College Friends`;
         </div>
 
         {/* Getting Started Section */}
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
           <h3 style={{
-            fontSize: '1.25rem',
+            fontSize: isMobile ? '1.1rem' : '1.25rem',
             fontWeight: '600',
             color: '#495057',
             marginBottom: '1rem'
@@ -187,13 +210,13 @@ Rachel Green,College Friends`;
           {/* Primary Options */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '1rem',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: isMobile ? '0.75rem' : '1rem',
             marginBottom: '1.5rem'
           }}>
             {/* Start Fresh */}
             <div style={{
-              padding: '1.5rem',
+              padding: isMobile ? '1.25rem' : '1.5rem',
               border: '2px solid #667eea',
               borderRadius: '16px',
               backgroundColor: '#f8f9ff',
@@ -211,17 +234,25 @@ Rachel Green,College Friends`;
             }}
             >
               <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🆕</div>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
+              <h4 style={{ 
+                fontSize: isMobile ? '1rem' : '1.1rem', 
+                fontWeight: '600', 
+                margin: '0 0 0.5rem 0' 
+              }}>
                 Start Fresh
               </h4>
-              <p style={{ fontSize: '0.9rem', margin: 0, opacity: 0.8 }}>
+              <p style={{ 
+                fontSize: isMobile ? '0.85rem' : '0.9rem', 
+                margin: 0, 
+                opacity: 0.8 
+              }}>
                 Upload your guest list CSV and create a new seating chart from scratch
               </p>
             </div>
 
             {/* Resume Project */}
             <div style={{
-              padding: '1.5rem',
+              padding: isMobile ? '1.25rem' : '1.5rem',
               border: '2px solid #28a745',
               borderRadius: '16px',
               backgroundColor: '#f8fff9',
@@ -239,10 +270,18 @@ Rachel Green,College Friends`;
             }}
             >
               <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📂</div>
-              <h4 style={{ fontSize: '1.1rem', fontWeight: '600', margin: '0 0 0.5rem 0' }}>
+              <h4 style={{ 
+                fontSize: isMobile ? '1rem' : '1.1rem', 
+                fontWeight: '600', 
+                margin: '0 0 0.5rem 0' 
+              }}>
                 Resume Project
               </h4>
-              <p style={{ fontSize: '0.9rem', margin: 0, opacity: 0.8 }}>
+              <p style={{ 
+                fontSize: isMobile ? '0.85rem' : '0.9rem', 
+                margin: 0, 
+                opacity: 0.8 
+              }}>
                 Load a saved SeatSaver project file to continue where you left off
               </p>
             </div>
@@ -250,11 +289,11 @@ Rachel Green,College Friends`;
         </div>
 
         {/* Secondary Actions */}
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
           <div style={{
             display: 'flex',
-            gap: '1rem',
-            flexWrap: 'wrap',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: isMobile ? '0.75rem' : '1rem',
             justifyContent: 'center'
           }}>
             <button
@@ -263,12 +302,13 @@ Rachel Green,College Friends`;
                 backgroundColor: 'white',
                 color: '#667eea',
                 border: '2px solid #667eea',
-                padding: '0.75rem 1.5rem',
-                fontSize: '0.95rem',
+                padding: isMobile ? '0.75rem 1rem' : '0.75rem 1.5rem',
+                fontSize: isMobile ? '0.9rem' : '0.95rem',
                 fontWeight: '500',
                 borderRadius: '25px',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                width: isMobile ? '100%' : 'auto'
               }}
               onMouseOver={(e) => {
                 e.target.style.backgroundColor = '#667eea';
@@ -288,12 +328,13 @@ Rachel Green,College Friends`;
                 backgroundColor: 'white',
                 color: '#6c757d',
                 border: '2px solid #e9ecef',
-                padding: '0.75rem 1.5rem',
-                fontSize: '0.95rem',
+                padding: isMobile ? '0.75rem 1rem' : '0.75rem 1.5rem',
+                fontSize: isMobile ? '0.9rem' : '0.95rem',
                 fontWeight: '500',
                 borderRadius: '25px',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                width: isMobile ? '100%' : 'auto'
               }}
               onMouseOver={(e) => {
                 e.target.style.borderColor = '#6c757d';
@@ -311,14 +352,14 @@ Rachel Green,College Friends`;
 
         {/* Trust indicators */}
         <div style={{
-          marginTop: '2rem',
-          padding: '1.5rem',
+          marginTop: isMobile ? '1.5rem' : '2rem',
+          padding: isMobile ? '1rem' : '1.5rem',
           backgroundColor: '#e7f3ff',
           borderRadius: '12px',
           border: '1px solid #b3d7ff'
         }}>
           <div style={{
-            fontSize: '0.9rem',
+            fontSize: isMobile ? '0.85rem' : '0.9rem',
             color: '#0d47a1',
             fontWeight: '500',
             marginBottom: '0.5rem'
@@ -326,7 +367,7 @@ Rachel Green,College Friends`;
             🔒 Your Privacy Matters
           </div>
           <div style={{
-            fontSize: '0.85rem',
+            fontSize: isMobile ? '0.8rem' : '0.85rem',
             color: '#1565c0',
             lineHeight: '1.4'
           }}>
@@ -334,29 +375,6 @@ Rachel Green,College Friends`;
             You can use SeatSaver completely offline after the page loads!
           </div>
         </div>
-
-        {/* Mobile responsive adjustments */}
-        <style jsx>{`
-          @media (max-width: 768px) {
-            h1 {
-              font-size: 2rem !important;
-            }
-            
-            .primary-options {
-              grid-template-columns: 1fr !important;
-              gap: 0.75rem !important;
-            }
-            
-            .secondary-buttons {
-              flex-direction: column !important;
-            }
-            
-            button {
-              width: 100% !important;
-              max-width: 280px;
-            }
-          }
-        `}</style>
       </div>
     </div>
   );

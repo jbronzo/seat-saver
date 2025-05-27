@@ -141,16 +141,21 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
       }
     };
       }, [tablePositions, tableLabels, tableConfigs, danceFloorPos, danceFloorSize, zoom, stagePos, nextTableId, isDraggingTable, onLayoutChange]);
-      React.useEffect(() => {
+
+      // Replace the mobile detection useEffect in CanvasChartArea.js
+React.useEffect(() => {
   const checkMobile = () => {
     const mobile = window.innerWidth <= 768;
     setIsMobile(mobile);
     
-    // Update stage size based on screen
+    // Better mobile canvas sizing
     if (mobile) {
+      const availableWidth = window.innerWidth - 16; // Account for padding
+      const availableHeight = Math.max(window.innerHeight * 0.6, 300); // 60% of screen height
+      
       setStageSize({ 
-        width: Math.max(window.innerWidth - 32, 300), 
-        height: Math.max(window.innerHeight * 0.5, 300) 
+        width: Math.max(availableWidth, 350), // Minimum width for usability
+        height: Math.max(availableHeight, 350) // Minimum height
       });
     } else {
       setStageSize({ width: 1200, height: 800 });
