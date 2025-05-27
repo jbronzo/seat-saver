@@ -594,80 +594,327 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
 
   // Render the main component
   return (
-    <div className="canvas-chart-area" style={{ position: 'relative' }}>
+    <div className="canvas-chart-area" style={{ position: 'relative', height: 'calc(100vh - 100px)', overflow: 'hidden' }}>
       {/* Compact Header */}
+     
+<div style={{ 
+  position: 'sticky',
+  top: 0,
+  zIndex: 100,
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(10px)',
+  borderBottom: '1px solid rgba(222, 226, 230, 0.5)',
+  padding: '0.75rem 1.25rem',
+  marginBottom: '1rem',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+}}>
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    maxWidth: '1400px',
+    margin: '0 auto'
+  }}>
+    {/* Left: Title with Status */}
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div>
+        <h3 style={{ 
+          margin: 0, 
+          fontSize: '1.1rem', 
+          fontWeight: '700',
+          color: '#495057',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          <span style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
+            💺 SeatSaver
+          </span>
+          <span style={{ 
+            fontSize: '0.7rem',
+            color: '#6c757d',
+            fontWeight: '400',
+            marginLeft: '0.5rem'
+          }}>
+            Layout Designer
+          </span>
+        </h3>
+      </div>
+      
+      {/* Status Indicators */}
       <div style={{ 
         display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '1rem',
-        padding: '0.75rem',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
-        border: '1px solid #dee2e6'
+        gap: '0.75rem',
+        alignItems: 'center'
       }}>
-        <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#495057' }}>
-          SeatSaver - Seating Chart Layout
-        </h3>
-        
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          {/* Quick Actions */}
-          <button 
-            onClick={handleAddTable} 
-            className={`btn btn-sm ${showAddTableMode ? 'btn-success' : 'btn-primary'}`}
-            style={{ fontSize: '0.875rem' }}
-          >
-            {showAddTableMode ? '📍 Click to Place' : '➕ Add Table'}
-          </button>
-          
-          {showAddTableMode && (
-            <button 
-              onClick={() => {
-                setShowAddTableMode(false);
-                setGhostTablePos(null);
-              }} 
-              className="btn btn-sm btn-outline-danger"
-              style={{ fontSize: '0.875rem' }}
-            >
-              Cancel
-            </button>
-          )}
-          
-          {/* View Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <button onClick={handleZoomOut} className="btn btn-sm btn-outline-secondary" title="Zoom Out">
-              🔍-
-            </button>
-            <span style={{ fontSize: '0.75rem', minWidth: '50px', textAlign: 'center', color: '#6c757d' }}>
-              {Math.round(zoom * 100)}%
-            </span>
-            <button onClick={handleZoomIn} className="btn btn-sm btn-outline-secondary" title="Zoom In">
-              🔍+
-            </button>
-            <button onClick={handleResetZoom} className="btn btn-sm btn-outline-secondary" title="Reset View">
-              🎯
-            </button>
-          </div>
-          
-          {/* Additional Controls */}
-          <button onClick={clearSavedLayout} className="btn btn-sm btn-outline-warning" title="Reset Layout">
-            🔄
-          </button>
-          <button onClick={exportImage} className="btn btn-sm btn-primary" title="Export as Image">
-            📷
-          </button>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.4rem',
+          padding: '0.3rem 0.7rem',
+          backgroundColor: '#e8f5e8',
+          borderRadius: '20px',
+          fontSize: '0.75rem',
+          fontWeight: '600',
+          color: '#28a745'
+        }}>
+          <span style={{ animation: 'pulse 2s infinite' }}>●</span>
+          <span>Auto-save ON</span>
         </div>
       </div>
+    </div>
+
+    {/* Right: Action Groups */}
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center',
+      gap: '1rem'
+    }}>
+      {/* Table Management */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        gap: '0.5rem',
+        padding: '0.4rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '12px',
+        border: '1px solid #e9ecef'
+      }}>
+        <button 
+          onClick={handleAddTable} 
+          className={`btn ${showAddTableMode ? 'btn-success' : 'btn-primary'}`}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            padding: '0.5rem 0.9rem',
+            backgroundColor: showAddTableMode ? '#28a745' : '#0d6efd',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '0.8rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-1px)';
+            e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+          }}
+        >
+          {showAddTableMode ? (
+            <>
+              <span>📍</span>
+              <span>Click to Place</span>
+            </>
+          ) : (
+            <>
+              <span>➕</span>
+              <span>Add Table</span>
+            </>
+          )}
+        </button>
+        
+        {showAddTableMode && (
+          <button 
+            onClick={() => {
+              setShowAddTableMode(false);
+              setGhostTablePos(null);
+            }}
+            style={{
+              padding: '0.5rem 0.7rem',
+              backgroundColor: 'transparent',
+              color: '#dc3545',
+              border: '1px solid #dc3545',
+              borderRadius: '8px',
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#dc3545';
+              e.target.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent';
+              e.target.style.color = '#dc3545';
+            }}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+
+      {/* View Controls */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        gap: '0.3rem',
+        padding: '0.4rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '12px',
+        border: '1px solid #e9ecef'
+      }}>
+        <button 
+          onClick={handleZoomOut} 
+          style={{
+            padding: '0.4rem 0.6rem',
+            backgroundColor: 'white',
+            border: '1px solid #dee2e6',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '0.8rem',
+            transition: 'all 0.2s ease'
+          }}
+          title="Zoom Out"
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          🔍-
+        </button>
+        
+        <div style={{
+          padding: '0.4rem 0.8rem',
+          fontSize: '0.75rem',
+          fontWeight: '600',
+          color: '#495057',
+          minWidth: '55px',
+          textAlign: 'center',
+          backgroundColor: 'white',
+          borderRadius: '6px',
+          border: '1px solid #dee2e6'
+        }}>
+          {Math.round(zoom * 100)}%
+        </div>
+        
+        <button 
+          onClick={handleZoomIn} 
+          style={{
+            padding: '0.4rem 0.6rem',
+            backgroundColor: 'white',
+            border: '1px solid #dee2e6',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '0.8rem',
+            transition: 'all 0.2s ease'
+          }}
+          title="Zoom In"
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          🔍+
+        </button>
+        
+        <button 
+          onClick={handleResetZoom} 
+          style={{
+            padding: '0.4rem 0.6rem',
+            backgroundColor: 'white',
+            border: '1px solid #dee2e6',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '0.8rem',
+            transition: 'all 0.2s ease'
+          }}
+          title="Reset View"
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+        >
+          🎯
+        </button>
+      </div>
+
+      {/* Quick Actions */}
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}>
+        <button 
+          onClick={clearSavedLayout} 
+          style={{
+            padding: '0.5rem 0.8rem',
+            backgroundColor: 'white',
+            color: '#fd7e14',
+            border: '1px solid #fd7e14',
+            borderRadius: '8px',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          title="Reset Layout"
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#fd7e14';
+            e.target.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = 'white';
+            e.target.style.color = '#fd7e14';
+          }}
+        >
+          🔄 Reset
+        </button>
+        
+        <button 
+          onClick={exportImage} 
+          style={{
+            padding: '0.5rem 0.8rem',
+            backgroundColor: '#17a2b8',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+          title="Export as Image"
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#138496';
+            e.target.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#17a2b8';
+            e.target.style.transform = 'translateY(0)';
+          }}
+        >
+          📷 Export
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* Main Layout Container */}
-      <div style={{ display: 'flex', gap: '1rem', position: 'relative' }}>
+      <div style={{ 
+  display: 'flex', 
+  gap: '1rem', 
+  position: 'relative',
+  height: '100%',
+  overflow: 'hidden'
+}}>
         
         {/* Canvas Area */}
         <div 
-          style={{ 
-            flex: '1',
-            position: 'relative'
-          }}
+  style={{ 
+    flex: '1',
+    position: 'relative',
+    minWidth: 0, // Important for flex shrinking
+    overflow: 'hidden'
+  }}
           onDrop={handleCanvasDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -851,7 +1098,16 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
         </div>
 
         {/* Modern Sidebar Panels */}
-        <div style={{ width: '320px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ 
+  width: '380px', // Increased width for better content fit
+  minWidth: '380px', // Prevent shrinking
+  display: 'flex', 
+  flexDirection: 'column', 
+  gap: '1rem',
+  maxHeight: '100%',
+  overflowY: 'auto', // Enable vertical scrolling
+  paddingRight: '8px' // Space for scrollbar
+}}>
           
           {/* New Table Configuration Panel (only when adding) */}
           {showAddTableMode && (
@@ -860,7 +1116,8 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
               border: '2px solid #0d6efd',
               borderRadius: '12px',
               padding: '1.5rem',
-              boxShadow: '0 4px 12px rgba(13, 110, 253, 0.15)'
+              boxShadow: '0 4px 12px rgba(13, 110, 253, 0.15)',
+              flexShrink: 0
             }}>
               <div style={{ 
                 display: 'flex', 

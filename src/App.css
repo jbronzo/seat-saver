@@ -696,3 +696,172 @@ h6 {
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0.7; 
+  }
+}
+
+/* Modern header styling */
+.modern-canvas-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(222, 226, 230, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Enhanced button hover effects */
+.modern-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* ========== SIDEBAR POSITIONING FIX ========== */
+
+/* Fix canvas chart area to prevent overflow */
+.canvas-chart-area {
+  padding: 0 !important;
+  overflow: hidden;
+  height: 100vh;
+}
+
+.sidebar-panels::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-panels::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.sidebar-panels::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.sidebar-panels::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* ========== RESPONSIVE IMPROVEMENTS ========== */
+
+/* Large screens - fixed sidebar */
+@media (min-width: 1401px) {
+  .sidebar-panels {
+    position: fixed !important;
+    right: 1rem !important;
+    top: 140px !important;
+    bottom: 1rem !important;
+    z-index: 50 !important;
+  }
+}
+
+/* Medium screens - relative sidebar */
+@media (max-width: 1400px) {
+  .sidebar-panels {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+  }
+  
+  .canvas-chart-area .canvas-container {
+    margin-right: 0 !important;
+  }
+}
+
+/* Mobile header adjustments */
+@media (max-width: 1024px) {
+  .canvas-chart-area > div:first-child > div:first-child {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: stretch !important;
+  }
+  
+  .canvas-chart-area > div:first-child > div:first-child > div {
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .canvas-chart-area h3 {
+    font-size: 1rem !important;
+  }
+  
+  .canvas-chart-area button {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.7rem !important;
+  }
+  
+  /* Stack header elements vertically on mobile */
+  .canvas-chart-area > div:first-child > div:first-child {
+    padding: 0.5rem !important;
+  }
+  
+  .canvas-chart-area > div:first-child > div:first-child > div:last-child {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+  
+  .canvas-chart-area > div:first-child > div:first-child > div:last-child > div {
+    flex-wrap: wrap !important;
+  }
+}
+
+/* ========== LAYOUT IMPROVEMENTS ========== */
+
+/* Ensure main layout takes full height */
+.wedding-seating-app {
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* Canvas area improvements */
+.canvas-chart-area > div:last-child {
+  height: calc(100vh - 140px) !important;
+}
+
+/* Prevent text selection on UI elements */
+.canvas-chart-area button,
+.canvas-chart-area .sidebar-panels {
+  user-select: none;
+}
+
+/* Improve focus states for accessibility */
+.canvas-chart-area button:focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+/* Better transitions for interactive elements */
+.canvas-chart-area button,
+.canvas-chart-area .sidebar-panels > div {
+  transition: all 0.2s ease;
+}
+
+/* ========== MOBILE SPECIFIC FIXES ========== */
+
+/* Touch-friendly buttons */
+@media (hover: none) and (pointer: coarse) {
+  .canvas-chart-area button {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    padding: 0.6rem 1rem !important;
+  }
+}
+
+/* Prevent zoom on iOS when focusing inputs */
+@media (max-width: 768px) {
+  .canvas-chart-area input,
+  .canvas-chart-area select {
+    font-size: 16px !important;
+  }
+}
