@@ -118,8 +118,8 @@ const WelcomeModal = ({ isOpen, onClose }) => {
           <h5>Save your work:</h5>
           <ul>
             <li><strong>Auto-save:</strong> Layout saves automatically to your browser</li>
-            <li><strong>Save State:</strong> Download complete project file (.json)</li>
-            <li><strong>Load State:</strong> Resume from saved project file</li>
+            <li><strong>Save Project:</strong> Download complete project file (.json)</li>
+            <li><strong>Load Project:</strong> Resume from saved project file</li>
           </ul>
 
           <h5>Export options:</h5>
