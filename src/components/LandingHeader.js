@@ -1,20 +1,18 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 const LandingHeader = ({ onShowHelp, onFileUpload, onLoadProject, totalGuests }) => {
+  // Create our own file input refs since sidebar inputs aren't available
+  const csvFileInputRef = useRef(null);
+  const projectFileInputRef = useRef(null);
+
   const triggerFileInput = () => {
-    // Trigger the hidden CSV file input
-    const fileInput = document.querySelector('input[type="file"][accept=".csv"]');
-    if (fileInput) {
-      fileInput.click();
-    }
+    // Trigger our own CSV file input
+    csvFileInputRef.current?.click();
   };
 
   const triggerLoadProject = () => {
-    // Trigger the hidden project file input
-    const loadInput = document.querySelector('input[type="file"][accept=".json"]');
-    if (loadInput) {
-      loadInput.click();
-    }
+    // Trigger our own project file input
+    projectFileInputRef.current?.click();
   };
 
   const downloadSampleCSV = () => {
@@ -61,6 +59,22 @@ Rachel Green,College Friends`;
       zIndex: 10,
       backdropFilter: 'blur(2px)'
     }}>
+      {/* Hidden file inputs */}
+      <input
+        type="file"
+        accept=".csv"
+        style={{ display: 'none' }}
+        ref={csvFileInputRef}
+        onChange={onFileUpload}
+      />
+      <input
+        type="file"
+        accept=".json"
+        style={{ display: 'none' }}
+        ref={projectFileInputRef}
+        onChange={onLoadProject}
+      />
+
       <div style={{
         textAlign: 'center',
         maxWidth: '600px',
