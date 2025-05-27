@@ -234,53 +234,58 @@ const WeddingSeatingChart = () => {
   const visibleCount = filteredGuests.length;
 
   return (
-    <div className="wedding-seating-app">
-      {/* Welcome Modal */}
-      <WelcomeModal 
-        isOpen={showWelcome} 
-        onClose={handleCloseWelcome} 
-      />
-      
-      {/* Landing Header - shows when no guests loaded */}
-      <LandingHeader 
-        onShowHelp={handleShowHelp}
-        onFileUpload={handleFileUpload}
-        onLoadProject={handleLoadState}
-        totalGuests={totalGuests}
-      />
-      
-      <Sidebar
-        filteredGuests={filteredGuests}
-        allGuests={allGuests}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedGroup={selectedGroup}
-        setSelectedGroup={setSelectedGroup}
-        availableGroups={availableGroups}
-        visibleCount={visibleCount}
-        unassignedCount={unassignedCount}
-        assignedGuests={assignedGuests}
-        totalGuests={totalGuests}
-        onFileUpload={handleFileUpload}
-        onSaveState={handleSaveState}
-        onLoadState={handleLoadState}
-        onExport={handleExport}
-        onDragStart={handleDragStart}
-        onShowHelp={handleShowHelp}
-        onAssignGroup={handleAssignGroup}
-      />
-      <CanvasChartArea
-        assignments={assignments}
-        onDrop={handleDrop}
-        allGuests={allGuests}
-        onRemoveGuest={handleRemoveGuest}
-        onDragStart={handleDragStart}
-        onLayoutChange={setLayoutData}
-        layoutData={layoutData}
-        onAddGuest={handleAddGuest}
-      />
-    </div>
-  );
+  <div className="wedding-seating-app">
+    {/* Welcome Modal */}
+    <WelcomeModal 
+      isOpen={showWelcome} 
+      onClose={handleCloseWelcome} 
+    />
+    
+    {/* Landing Header - shows when no guests loaded */}
+    <LandingHeader 
+      onShowHelp={handleShowHelp}
+      onFileUpload={handleFileUpload}
+      onLoadProject={handleLoadState}
+      totalGuests={totalGuests}
+    />
+    
+    {/* Only show sidebar and canvas when guests are loaded */}
+    {totalGuests > 0 && (
+      <>
+        <Sidebar
+          filteredGuests={filteredGuests}
+          allGuests={allGuests}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedGroup={selectedGroup}
+          setSelectedGroup={setSelectedGroup}
+          availableGroups={availableGroups}
+          visibleCount={visibleCount}
+          unassignedCount={unassignedCount}
+          assignedGuests={assignedGuests}
+          totalGuests={totalGuests}
+          onFileUpload={handleFileUpload}
+          onSaveState={handleSaveState}
+          onLoadState={handleLoadState}
+          onExport={handleExport}
+          onDragStart={handleDragStart}
+          onShowHelp={handleShowHelp}
+          onAssignGroup={handleAssignGroup}
+        />
+        <CanvasChartArea
+          assignments={assignments}
+          onDrop={handleDrop}
+          allGuests={allGuests}
+          onRemoveGuest={handleRemoveGuest}
+          onDragStart={handleDragStart}
+          onLayoutChange={setLayoutData}
+          layoutData={layoutData}
+          onAddGuest={handleAddGuest}
+        />
+      </>
+    )}
+  </div>
+);
 };
 
 export default WeddingSeatingChart;
