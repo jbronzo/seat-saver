@@ -973,18 +973,22 @@ React.useEffect(() => {
                 />
                 
                 {/* Grid */}
-                {Array.from({ length: Math.ceil(stageSize.width / 20) }).map((_, i) => (
+                 {/* THIS IS WHERE YOUR GRID CODE SHOULD BE */}
+                {/* Vertical grid lines - change 20 to 40 */}
+                {Array.from({ length: Math.ceil(stageSize.width / 40) }).map((_, i) => (
                   <Line
                     key={`grid-v-${i}`}
-                    points={[i * 20, 0, i * 20, stageSize.height]}
+                    points={[i * 40, 0, i * 40, stageSize.height]}
                     stroke="rgba(0,0,0,0.05)"
                     strokeWidth={1}
                   />
                 ))}
-                {Array.from({ length: Math.ceil(stageSize.height / 20) }).map((_, i) => (
+
+                {/* Horizontal grid lines - change 20 to 40 */}
+                {Array.from({ length: Math.ceil(stageSize.height / 40) }).map((_, i) => (
                   <Line
                     key={`grid-h-${i}`}
-                    points={[0, i * 20, stageSize.width, i * 20]}
+                    points={[0, i * 40, stageSize.width, i * 40]}
                     stroke="rgba(0,0,0,0.05)"
                     strokeWidth={1}
                   />

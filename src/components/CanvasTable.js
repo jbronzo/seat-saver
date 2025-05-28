@@ -470,7 +470,7 @@ const CanvasTable = ({
                 perfectDrawEnabled={false}
               />
               <Text
-                text={slot.guest ? "Click to move/remove" : "Right-click to add"}
+                text={slot.guest ? "Left-click: Move • Right-click: Remove" : "Right-click to add"}
                 fontSize={8}
                 fontFamily="Arial"
                 fill="#cccccc"
