@@ -410,181 +410,176 @@ const CanvasTable = ({
         />
       </Group>
       
-      {/* PERFORMANCE: Only render guest slots when not dragging to improve performance */}
-      {!isDragging && slots.map((slot, index) => (
-        <Group key={index} perfectDrawEnabled={false}>
-          <Circle
-            x={slot.x}
-            y={slot.y}
-            radius={slotSize + 4}
-            fill="transparent"
-            onClick={(e) => handleSlotLeftClick(e, index, slot.guest)}
-            onTap={(e) => handleSlotLeftClick(e, index, slot.guest)}
-            onContextMenu={(e) => handleSlotRightClick(e, index, slot.guest)}
-            onMouseEnter={() => setHoveredSlot(index)}
-            onMouseLeave={() => setHoveredSlot(null)}
-            perfectDrawEnabled={false}
-          />
-          
-          <Circle
-            x={slot.x}
-            y={slot.y}
-            radius={slotSize}
-            fill={slot.guest ? 
-              (hoveredSlot === index ? "#0a58ca" : "#0d6efd") : 
-              (hoveredSlot === index ? "#28a745" : "#ffffff")}
-            stroke={slot.guest ? 
-              (hoveredSlot === index ? "#ffffff" : "#0d6efd") :
-              (hoveredSlot === index ? "#ffffff" : "#28a745")}
-            strokeWidth={hoveredSlot === index ? 3 : 2}
-            shadowBlur={hoveredSlot === index ? 4 : 2}
-            shadowColor={hoveredSlot === index ? 
-              (slot.guest ? "rgba(10, 88, 202, 0.4)" : "rgba(40, 167, 69, 0.4)") : 
-              "rgba(0,0,0,0.1)"}
-            listening={false}
-            perfectDrawEnabled={false}
-          />
-          
-          {/* Simplified tooltips - only show when hovering and not dragging */}
-          {hoveredSlot === index && !isDragging && (
-            <Group perfectDrawEnabled={false}>
-              <Rect
-                x={slot.x - 60}
-                y={slot.y - 40}
-                width={120}
-                height={30}
-                fill="rgba(0,0,0,0.9)"
-                cornerRadius={4}
-                perfectDrawEnabled={false}
-              />
-              <Text
-                text={slot.guest || "Empty Seat"}
-                fontSize={10}
-                fontFamily="Arial"
-                fontWeight="bold"
-                fill="white"
-                x={slot.x - 57}
-                y={slot.y - 35}
-                width={114}
-                align="center"
-                perfectDrawEnabled={false}
-              />
-              <Text
-                text={slot.guest ? "Left-click: Move • Right-click: Remove" : "Right-click to add"}
-                fontSize={8}
-                fontFamily="Arial"
-                fill="#cccccc"
-                x={slot.x - 57}
-                y={slot.y - 22}
-                width={114}
-                align="center"
-                perfectDrawEnabled={false}
-              />
-            </Group>
-          )}
-
-          {slot.guest && (
-            <Text
-              text={slot.guest.charAt(0).toUpperCase()}
-              fontSize={9}
-              fontFamily="Arial"
-              fontWeight="bold"
-              fill="white"
-              x={slot.x - 4}
-              y={slot.y - 5}
-              shadowBlur={1}
-              shadowColor="rgba(0,0,0,0.7)"
-              listening={false}
-              perfectDrawEnabled={false}
-            />
-          )}
-        </Group>
-      ))}
-      
-      {/* Info icon */}
+      {/* STEP 1: Render all guest slots first (WITHOUT tooltips) */}
+{!isDragging && slots.map((slot, index) => (
+  <Group key={index} perfectDrawEnabled={false}>
+    <Circle
+      x={slot.x}
+      y={slot.y}
+      radius={slotSize + 4}
+      fill="transparent"
+      onClick={(e) => handleSlotLeftClick(e, index, slot.guest)}
+      onTap={(e) => handleSlotLeftClick(e, index, slot.guest)}
+      onContextMenu={(e) => handleSlotRightClick(e, index, slot.guest)}
+      onMouseEnter={() => setHoveredSlot(index)}
+      onMouseLeave={() => setHoveredSlot(null)}
+      perfectDrawEnabled={false}
+    />
+    
+    <Circle
+      x={slot.x}
+      y={slot.y}
+      radius={slotSize}
+      fill={slot.guest ? 
+        (hoveredSlot === index ? "#0a58ca" : "#0d6efd") : 
+        (hoveredSlot === index ? "#28a745" : "#ffffff")}
+      stroke={slot.guest ? 
+        (hoveredSlot === index ? "#ffffff" : "#0d6efd") :
+        (hoveredSlot === index ? "#ffffff" : "#28a745")}
+      strokeWidth={hoveredSlot === index ? 3 : 2}
+      shadowBlur={hoveredSlot === index ? 4 : 2}
+      shadowColor={hoveredSlot === index ? 
+        (slot.guest ? "rgba(10, 88, 202, 0.4)" : "rgba(40, 167, 69, 0.4)") : 
+        "rgba(0,0,0,0.1)"}
+      listening={false}
+      perfectDrawEnabled={false}
+    />
+    
+    {/* Guest initial letter */}
+    {slot.guest && (
       <Text
-        text="ℹ️"
-        fontSize={14}
-        x={infoPos.x}
-        y={infoPos.y}
-        onClick={handleInfoClick}
-        onTap={handleInfoClick}
-        listening={true}
+        text={slot.guest.charAt(0).toUpperCase()}
+        fontSize={9}
+        fontFamily="Arial"
+        fontWeight="bold"
+        fill="white"
+        x={slot.x - 4}
+        y={slot.y - 5}
+        shadowBlur={1}
+        shadowColor="rgba(0,0,0,0.7)"
+        listening={false}
         perfectDrawEnabled={false}
       />
-    </Group>
-  );
+    )}
+  </Group>
+))}
 
-  // Simplified slot click handlers (keeping the same logic but optimized)
-  function handleSlotLeftClick(e, slotIndex, guest) {
-    e.cancelBubble = true;
-    if (e.evt && e.evt.stopPropagation) {
-      e.evt.stopPropagation();
-      e.evt.stopImmediatePropagation();
-    }
-    
-    if (e.evt && e.evt.button !== 0) return;
-    
-    setIsClickingSlot(true);
-    
-    if (guest) {
-      const moveToTable = window.prompt(
-        `Move ${guest} to which table?\nEnter a table number (e.g., 1, 2, 3...)\nCurrent table: ${tableId}`
-      );
-      
-      if (moveToTable && moveToTable !== tableId) {
-        onSlotClick(guest, tableId, moveToTable);
+{/* STEP 2: Render tooltip AFTER all slots - so it appears on top */}
+{!isDragging && hoveredSlot !== null && slots[hoveredSlot] && (
+  <Group perfectDrawEnabled={false}>
+    <Rect
+      x={slots[hoveredSlot].x - 100}  // Wider
+      y={slots[hoveredSlot].y - 45}
+      width={200}                     // Much wider
+      height={35}                     // Simpler height
+      fill="rgba(0,0,0,0.9)"
+      cornerRadius={6}
+      shadowBlur={4}
+      shadowColor="rgba(0,0,0,0.5)"
+      shadowOffsetY={2}
+      perfectDrawEnabled={false}
+    />
+    <Text
+      text={slots[hoveredSlot].guest ? 
+        `${slots[hoveredSlot].guest} • Left Click: Move | Right Click: Remove` : 
+        "Right-click: Add guest | Drag from sidebar"
       }
-    }
-    
-    setTimeout(() => setIsClickingSlot(false), 200);
-  }
+      fontSize={10}
+      fontFamily="Arial"
+      fill="white"
+      x={slots[hoveredSlot].x - 95}
+      y={slots[hoveredSlot].y - 38}
+      width={190}
+      align="center"
+      perfectDrawEnabled={false}
+    />
+  </Group>
+)}
 
-  function handleSlotRightClick(e, slotIndex, guest) {
-    e.evt.preventDefault();
+{/* Info icon */}
+<Text
+  text="ℹ️"
+  fontSize={14}
+  x={infoPos.x}
+  y={infoPos.y}
+  onClick={handleInfoClick}
+  onTap={handleInfoClick}
+  listening={true}
+  perfectDrawEnabled={false}
+/>
+</Group>
+);
+
+// Simplified slot click handlers (keeping the same logic but optimized)
+function handleSlotLeftClick(e, slotIndex, guest) {
+  e.cancelBubble = true;
+  if (e.evt && e.evt.stopPropagation) {
     e.evt.stopPropagation();
     e.evt.stopImmediatePropagation();
-    e.cancelBubble = true;
+  }
+  
+  if (e.evt && e.evt.button !== 0) return;
+  
+  setIsClickingSlot(true);
+  
+  if (guest) {
+    const moveToTable = window.prompt(
+      `Move ${guest} to which table?\nEnter a table number (e.g., 1, 2, 3...)\nCurrent table: ${tableId}`
+    );
     
-    setIsClickingSlot(true);
+    if (moveToTable && moveToTable !== tableId) {
+      onSlotClick(guest, tableId, moveToTable);
+    }
+  }
+  
+  setTimeout(() => setIsClickingSlot(false), 200);
+}
+
+function handleSlotRightClick(e, slotIndex, guest) {
+  e.evt.preventDefault();
+  e.evt.stopPropagation();
+  e.evt.stopImmediatePropagation();
+  e.cancelBubble = true;
+  
+  setIsClickingSlot(true);
+  
+  if (guest) {
+    const action = window.confirm(`${guest} is assigned to ${tableLabel}.\n\nClick OK to REMOVE from table.\nClick Cancel to keep guest here.`);
+    if (action) {
+      onSlotClick(guest, tableId);
+    }
+  } else {
+    const newGuestName = window.prompt(
+      `Add a new guest to ${tableLabel}?\n\nEnter the guest's name:\n(This will create a new guest and assign them to this table)`
+    );
     
-    if (guest) {
-      const action = window.confirm(`${guest} is assigned to ${tableLabel}.\n\nClick OK to REMOVE from table.\nClick Cancel to keep guest here.`);
-      if (action) {
-        onSlotClick(guest, tableId);
-      }
-    } else {
-      const newGuestName = window.prompt(
-        `Add a new guest to ${tableLabel}?\n\nEnter the guest's name:\n(This will create a new guest and assign them to this table)`
+    if (newGuestName && newGuestName.trim()) {
+      const trimmedName = newGuestName.trim();
+      
+      const existingGuest = assignments.find(a => 
+        a.name.toLowerCase() === trimmedName.toLowerCase()
       );
       
-      if (newGuestName && newGuestName.trim()) {
-        const trimmedName = newGuestName.trim();
-        
-        const existingGuest = assignments.find(a => 
-          a.name.toLowerCase() === trimmedName.toLowerCase()
-        );
-        
-        if (existingGuest) {
-          alert(`Guest "${trimmedName}" already exists and is assigned to Table ${existingGuest.table}.`);
-          setIsClickingSlot(false);
-          return;
-        }
-        
-        if (guestCount >= capacity) {
-          alert(`${tableLabel} is already full! (${guestCount}/${capacity})`);
-          setIsClickingSlot(false);
-          return;
-        }
-        
-        if (onAddGuest) {
-          onAddGuest(trimmedName, tableId);
-        }
+      if (existingGuest) {
+        alert(`Guest "${trimmedName}" already exists and is assigned to Table ${existingGuest.table}.`);
+        setIsClickingSlot(false);
+        return;
+      }
+      
+      if (guestCount >= capacity) {
+        alert(`${tableLabel} is already full! (${guestCount}/${capacity})`);
+        setIsClickingSlot(false);
+        return;
+      }
+      
+      if (onAddGuest) {
+        onAddGuest(trimmedName, tableId);
       }
     }
-    
-    setTimeout(() => setIsClickingSlot(false), 200);
   }
+  
+  setTimeout(() => setIsClickingSlot(false), 200);
+}
 };
 
 export default CanvasTable;
