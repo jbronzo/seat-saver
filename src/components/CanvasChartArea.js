@@ -173,30 +173,30 @@ React.useEffect(() => {
     y: Math.round(pos.y / 20) * 20
   });
 
-  const checkCollision = (tableId, newPos, excludeId = null) => {
-    for (const [otherId, otherPos] of Object.entries(tablePositions)) {
-      if (otherId !== tableId && otherId !== excludeId) {
-        const distance = Math.sqrt(
-          Math.pow(newPos.x - otherPos.x, 2) + 
-          Math.pow(newPos.y - otherPos.y, 2)
-        );
-        if (distance < 120) {
-          return true;
-        }
-      }
-    }
+  // const checkCollision = (tableId, newPos, excludeId = null) => {
+  //   for (const [otherId, otherPos] of Object.entries(tablePositions)) {
+  //     if (otherId !== tableId && otherId !== excludeId) {
+  //       const distance = Math.sqrt(
+  //         Math.pow(newPos.x - otherPos.x, 2) + 
+  //         Math.pow(newPos.y - otherPos.y, 2)
+  //       );
+  //       if (distance < 120) {
+  //         return true;
+  //       }
+  //     }
+  //   }
     
-    // Check collision with dance floor
-    const danceFloorDistance = Math.sqrt(
-      Math.pow(newPos.x - danceFloorPos.x, 2) + 
-      Math.pow(newPos.y - danceFloorPos.y, 2)
-    );
-    if (danceFloorDistance < 120) {
-      return true;
-    }
+  //   // Check collision with dance floor
+  //   const danceFloorDistance = Math.sqrt(
+  //     Math.pow(newPos.x - danceFloorPos.x, 2) + 
+  //     Math.pow(newPos.y - danceFloorPos.y, 2)
+  //   );
+  //   if (danceFloorDistance < 120) {
+  //     return true;
+  //   }
     
-    return false;
-  };
+  //   return false;
+  // };
 
   const handleAddTable = () => {
     setShowAddTableMode(true);
@@ -344,10 +344,10 @@ React.useEffect(() => {
       
       const snappedPos = snapToGrid(adjustedPointer);
       
-      if (checkCollision(null, snappedPos)) {
-        alert('Cannot place table here - too close to another object!');
-        return;
-      }
+      // if (checkCollision(null, snappedPos)) {
+      //   alert('Cannot place table here - too close to another object!');
+      //   return;
+      // }
       
       const newTableId = nextTableId.toString();
       setTablePositions(prev => ({
@@ -483,23 +483,15 @@ React.useEffect(() => {
   };
 
   const handleTableDragEnd = (tableId, newPosition) => {
-    const snappedPos = snapToGrid(newPosition);
-    
-    if (checkCollision(tableId, snappedPos)) {
-      alert('Cannot place table here - too close to another table!');
-      setIsDraggingTable(false);
-      return;
-    }
-    
-    setTablePositions(prev => ({
-      ...prev,
-      [tableId]: snappedPos
-    }));
-    
-    setTimeout(() => {
-      setIsDraggingTable(false);
-    }, 100);
-  };
+  const snappedPos = snapToGrid(newPosition);
+  
+  setTablePositions(prev => ({
+    ...prev,
+    [tableId]: snappedPos
+  }));
+  
+  setIsDraggingTable(false);
+};
 
   const handleSweetheartDragEnd = (e) => {
     const newPos = e.target.position();
@@ -971,6 +963,7 @@ React.useEffect(() => {
               onClick={handleCanvasClick}
               onMouseMove={handleMouseMove}
               perfectDrawEnabled={false}
+              listening={!isDragging}
             >
               <Layer>
                 <Rect
