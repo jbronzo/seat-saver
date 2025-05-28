@@ -963,7 +963,7 @@ React.useEffect(() => {
               onClick={handleCanvasClick}
               onMouseMove={handleMouseMove}
               perfectDrawEnabled={false}
-              listening={!isDragging}
+              listening={!isDraggingTable}
             >
               <Layer>
                 <Rect
