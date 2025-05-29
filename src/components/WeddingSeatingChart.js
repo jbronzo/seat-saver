@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import Sidebar from './Sidebar';
 import CanvasChartArea from './CanvasChartArea';
 import WelcomeModal from './WelcomeModal';
-import LandingHeader from './LandingHeader'; // New import
+import LandingHeader from './LandingHeader'; // Keep the original import name
 import { saveStateToFile, loadStateFromFile, exportToCSV } from '../utils/fileUtils';
 
 const WeddingSeatingChart = () => {
@@ -31,6 +31,33 @@ const WeddingSeatingChart = () => {
   const handleShowHelp = () => {
     setShowWelcome(true);
   };
+
+  // NEW: Handle template loading
+  const handleLoadTemplate = useCallback((templateData) => {
+    try {
+      console.log('Loading template:', templateData);
+      
+      // Set the template data
+      setAllGuests(templateData.guests || []);
+      setAssignments(templateData.assignments || []);
+      setLayoutData(templateData.layout || null);
+      
+      // Reset filters
+      setSearchTerm('');
+      setSelectedGroup('All');
+      
+      console.log('Template loaded successfully');
+      
+      // Show a brief success message
+      setTimeout(() => {
+        alert('Template loaded! You can now upload your guest list or start customizing the layout.');
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error loading template:', error);
+      alert('Failed to load template. Please try again.');
+    }
+  }, []);
 
   // Get unassigned guests for sidebar
   const unassignedGuests = allGuests.filter(guest => 
@@ -83,9 +110,20 @@ const WeddingSeatingChart = () => {
           return;
         }
         
+        // If we have a template loaded (layoutData exists), keep the layout but replace guests
         setAllGuests(guests);
+        
+        // Clear old assignments since we have new guests
         setAssignments([]);
+        
         console.log(`Loaded ${guests.length} guests from CSV${hasGroupColumn ? ' with groups' : ''}`);
+        
+        // Show success message
+        setTimeout(() => {
+          const templateMessage = layoutData ? ' Your template layout has been preserved.' : '';
+          alert(`Successfully loaded ${guests.length} guests!${templateMessage} You can now start assigning them to tables.`);
+        }, 300);
+        
       } catch (error) {
         console.error('Error parsing CSV:', error);
         alert('Error reading CSV file. Please check the file format and try again.');
@@ -234,58 +272,54 @@ const WeddingSeatingChart = () => {
   const visibleCount = filteredGuests.length;
 
   return (
-  <div className="wedding-seating-app">
-    {/* Welcome Modal */}
-    <WelcomeModal 
-      isOpen={showWelcome} 
-      onClose={handleCloseWelcome} 
-    />
-    
-    {/* Landing Header - shows when no guests loaded */}
-    <LandingHeader 
-      onShowHelp={handleShowHelp}
-      onFileUpload={handleFileUpload}
-      onLoadProject={handleLoadState}
-      totalGuests={totalGuests}
-    />
-    
-    {/* Only show sidebar and canvas when guests are loaded */}
-    {totalGuests > 0 && (
-      <>
-        <Sidebar
-          filteredGuests={filteredGuests}
-          allGuests={allGuests}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedGroup={selectedGroup}
-          setSelectedGroup={setSelectedGroup}
-          availableGroups={availableGroups}
-          visibleCount={visibleCount}
-          unassignedCount={unassignedCount}
-          assignedGuests={assignedGuests}
-          totalGuests={totalGuests}
-          onFileUpload={handleFileUpload}
-          onSaveState={handleSaveState}
-          onLoadState={handleLoadState}
-          onExport={handleExport}
-          onDragStart={handleDragStart}
-          onShowHelp={handleShowHelp}
-          onAssignGroup={handleAssignGroup}
-        />
-        <CanvasChartArea
-          assignments={assignments}
-          onDrop={handleDrop}
-          allGuests={allGuests}
-          onRemoveGuest={handleRemoveGuest}
-          onDragStart={handleDragStart}
-          onLayoutChange={setLayoutData}
-          layoutData={layoutData}
-          onAddGuest={handleAddGuest}
-        />
-      </>
-    )}
-  </div>
-);
+    <div className="wedding-seating-app">
+      {/* Welcome Modal */}
+      <WelcomeModal 
+        isOpen={showWelcome} 
+        onClose={handleCloseWelcome} 
+      />
+      
+      {/* Landing Header with Templates - shows when no guests loaded */}
+      <LandingHeader 
+        onShowHelp={handleShowHelp}
+        onFileUpload={handleFileUpload}
+        onLoadProject={handleLoadState}
+        onLoadTemplate={handleLoadTemplate} // NEW: Pass template handler
+        totalGuests={totalGuests}
+      />
+      
+      <Sidebar
+        filteredGuests={filteredGuests}
+        allGuests={allGuests}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedGroup={selectedGroup}
+        setSelectedGroup={setSelectedGroup}
+        availableGroups={availableGroups}
+        visibleCount={visibleCount}
+        unassignedCount={unassignedCount}
+        assignedGuests={assignedGuests}
+        totalGuests={totalGuests}
+        onFileUpload={handleFileUpload}
+        onSaveState={handleSaveState}
+        onLoadState={handleLoadState}
+        onExport={handleExport}
+        onDragStart={handleDragStart}
+        onShowHelp={handleShowHelp}
+        onAssignGroup={handleAssignGroup}
+      />
+      <CanvasChartArea
+        assignments={assignments}
+        onRemoveGuest={handleRemoveGuest}
+        onDrop={handleDrop}
+        allGuests={allGuests}
+        onDragStart={handleDragStart}
+        onLayoutChange={setLayoutData}
+        layoutData={layoutData}
+        onAddGuest={handleAddGuest}
+      />
+    </div>
+  );
 };
 
 export default WeddingSeatingChart;
