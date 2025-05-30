@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import Sidebar from './Sidebar';
 import CanvasChartArea from './CanvasChartArea';
 import WelcomeModal from './WelcomeModal';
-import LandingHeader from './LandingHeader'; // Keep the original import name
+import LandingHeader from './LandingHeader';
 import { saveStateToFile, loadStateFromFile, exportToCSV } from '../utils/fileUtils';
 
 const WeddingSeatingChart = () => {
@@ -32,7 +32,7 @@ const WeddingSeatingChart = () => {
     setShowWelcome(true);
   };
 
-  // NEW: Handle template loading
+  // Handle template loading
   const handleLoadTemplate = useCallback((templateData) => {
     try {
       console.log('Loading template:', templateData);
@@ -50,7 +50,11 @@ const WeddingSeatingChart = () => {
       
       // Show a brief success message
       setTimeout(() => {
-        alert('Template loaded! You can now upload your guest list or start customizing the layout.');
+        if (templateData.guests && templateData.guests.length === 1 && templateData.guests[0].Name === "Sample Guest") {
+          alert('Template loaded! Upload your guest list CSV to replace the sample guest and start seating your real guests.');
+        } else {
+          alert('Template loaded! You can now start customizing the layout or upload a new guest list.');
+        }
       }, 500);
       
     } catch (error) {
@@ -284,7 +288,7 @@ const WeddingSeatingChart = () => {
         onShowHelp={handleShowHelp}
         onFileUpload={handleFileUpload}
         onLoadProject={handleLoadState}
-        onLoadTemplate={handleLoadTemplate} // NEW: Pass template handler
+        onLoadTemplate={handleLoadTemplate}
         totalGuests={totalGuests}
       />
       
@@ -303,6 +307,7 @@ const WeddingSeatingChart = () => {
         onFileUpload={handleFileUpload}
         onSaveState={handleSaveState}
         onLoadState={handleLoadState}
+        onLoadTemplate={handleLoadTemplate} // NEW: Pass template handler to sidebar
         onExport={handleExport}
         onDragStart={handleDragStart}
         onShowHelp={handleShowHelp}

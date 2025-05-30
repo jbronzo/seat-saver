@@ -66,7 +66,7 @@ Rachel Green,College Friends`;
 
   return (
     <div style={{
-      position: 'absolute',
+      position: 'fixed', // Changed from absolute to fixed
       top: 0,
       left: 0,
       right: 0,
@@ -75,7 +75,7 @@ Rachel Green,College Friends`;
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      zIndex: 10,
+      zIndex: 1000, // Increased z-index to ensure it's above canvas header
       backdropFilter: 'blur(2px)'
     }}>
       {/* Hidden file inputs */}
@@ -103,8 +103,8 @@ Rachel Green,College Friends`;
         borderRadius: '20px',
         boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1)',
         border: '1px solid #e9ecef',
-        maxHeight: '90vh',
-        overflowY: 'auto'
+        maxHeight: '85vh', // Consistent height
+        overflowY: 'auto' // Always show scrollbar when needed
       }}>
         {!showTemplates ? (
           <>
@@ -316,7 +316,7 @@ Rachel Green,College Friends`;
             </div>
 
             {/* Secondary Actions */}
-            <div style={{ marginBottom: '2rem' }}>
+            <div style={{ marginBottom: '1.5rem' }}> {/* Reduced margin */}
               <div style={{
                 display: 'flex',
                 gap: '1rem',
@@ -377,8 +377,7 @@ Rachel Green,College Friends`;
 
             {/* Trust indicators */}
             <div style={{
-              marginTop: '2rem',
-              padding: '1.5rem',
+              padding: '1.25rem', // Slightly reduced padding
               backgroundColor: '#e7f3ff',
               borderRadius: '12px',
               border: '1px solid #b3d7ff'
@@ -610,7 +609,7 @@ Rachel Green,College Friends`;
           </>
         )}
 
-        {/* Mobile responsive adjustments */}
+        {/* Custom scrollbar styles */}
         <style jsx>{`
           @media (max-width: 768px) {
             h1 {
@@ -635,6 +634,31 @@ Rachel Green,College Friends`;
               width: 100% !important;
               max-width: 280px;
             }
+          }
+          
+          /* Custom scrollbar styling for all screen sizes */
+          div::-webkit-scrollbar {
+            width: 8px;
+          }
+          
+          div::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+          }
+          
+          div::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.4);
+            border-radius: 4px;
+          }
+          
+          div::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.6);
+          }
+          
+          /* Firefox scrollbar styling */
+          div {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(102, 126, 234, 0.4) rgba(0,0,0,0.1);
           }
         `}</style>
       </div>
