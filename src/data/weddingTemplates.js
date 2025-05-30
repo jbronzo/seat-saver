@@ -22,15 +22,15 @@ export const WEDDING_TEMPLATES = {
           '5': 'Work Colleagues', '6': 'Neighbors', '7': 'High School', '8': 'Plus Ones', '9': 'Mixed Group'
         },
         tableConfigs: {
-          '1': { shape: 'rectangle', size: 65, capacity: 8, backgroundColor: '#fff3cd' },
-          '2': { shape: 'circle', size: 50, capacity: 10, backgroundColor: '#d4edda' },
-          '3': { shape: 'circle', size: 50, capacity: 10, backgroundColor: '#d4edda' },
-          '4': { shape: 'oval', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '5': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '6': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '7': { shape: 'oval', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '8': { shape: 'square', size: 40, capacity: 6, backgroundColor: '#f8d7da' },
-          '9': { shape: 'square', size: 40, capacity: 6, backgroundColor: '#f8d7da' }
+          '1': { shape: 'rectangle', size: 75, capacity: 8, backgroundColor: '#fff3cd' },
+          '2': { shape: 'circle', size: 60, capacity: 10, backgroundColor: '#d4edda' },
+          '3': { shape: 'circle', size: 60, capacity: 10, backgroundColor: '#d4edda' },
+          '4': { shape: 'oval', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '5': { shape: 'circle', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '6': { shape: 'circle', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '7': { shape: 'oval', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '8': { shape: 'square', size: 50, capacity: 6, backgroundColor: '#f8d7da' },
+          '9': { shape: 'square', size: 50, capacity: 6, backgroundColor: '#f8d7da' }
         },
         danceFloorPos: { x: 900, y: 300 }, danceFloorSize: { width: 160, height: 120 },
         zoom: 0.85, stagePos: { x: 50, y: 50 }, nextTableId: 10
@@ -62,21 +62,21 @@ export const WEDDING_TEMPLATES = {
           '13': 'Plus Ones A', '14': 'Plus Ones B', '15': 'Mixed Group'
         },
         tableConfigs: {
-          '1': { shape: 'rectangle', size: 70, capacity: 10, backgroundColor: '#fff3cd' },
-          '2': { shape: 'circle', size: 50, capacity: 10, backgroundColor: '#d4edda' },
-          '3': { shape: 'circle', size: 50, capacity: 10, backgroundColor: '#d4edda' },
-          '4': { shape: 'circle', size: 50, capacity: 10, backgroundColor: '#d4edda' },
-          '5': { shape: 'circle', size: 50, capacity: 10, backgroundColor: '#e2e3e5' },
-          '6': { shape: 'circle', size: 45, capacity: 10, backgroundColor: '#d1ecf1' },
-          '7': { shape: 'circle', size: 45, capacity: 10, backgroundColor: '#d1ecf1' },
-          '8': { shape: 'circle', size: 45, capacity: 10, backgroundColor: '#d1ecf1' },
-          '9': { shape: 'circle', size: 45, capacity: 10, backgroundColor: '#f8f9fa' },
-          '10': { shape: 'circle', size: 45, capacity: 10, backgroundColor: '#f8f9fa' },
-          '11': { shape: 'circle', size: 45, capacity: 10, backgroundColor: '#f8f9fa' },
-          '12': { shape: 'circle', size: 45, capacity: 10, backgroundColor: '#f8f9fa' },
-          '13': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#f8d7da' },
-          '14': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#f8d7da' },
-          '15': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#f8d7da' }
+          '1': { shape: 'rectangle', size: 80, capacity: 10, backgroundColor: '#fff3cd' },
+          '2': { shape: 'circle', size: 60, capacity: 10, backgroundColor: '#d4edda' },
+          '3': { shape: 'circle', size: 60, capacity: 10, backgroundColor: '#d4edda' },
+          '4': { shape: 'circle', size: 60, capacity: 10, backgroundColor: '#d4edda' },
+          '5': { shape: 'circle', size: 60, capacity: 10, backgroundColor: '#e2e3e5' },
+          '6': { shape: 'circle', size: 55, capacity: 10, backgroundColor: '#d1ecf1' },
+          '7': { shape: 'circle', size: 55, capacity: 10, backgroundColor: '#d1ecf1' },
+          '8': { shape: 'circle', size: 55, capacity: 10, backgroundColor: '#d1ecf1' },
+          '9': { shape: 'circle', size: 55, capacity: 10, backgroundColor: '#f8f9fa' },
+          '10': { shape: 'circle', size: 55, capacity: 10, backgroundColor: '#f8f9fa' },
+          '11': { shape: 'circle', size: 55, capacity: 10, backgroundColor: '#f8f9fa' },
+          '12': { shape: 'circle', size: 55, capacity: 10, backgroundColor: '#f8f9fa' },
+          '13': { shape: 'circle', size: 50, capacity: 8, backgroundColor: '#f8d7da' },
+          '14': { shape: 'circle', size: 50, capacity: 8, backgroundColor: '#f8d7da' },
+          '15': { shape: 'circle', size: 50, capacity: 8, backgroundColor: '#f8d7da' }
         },
         danceFloorPos: { x: 850, y: 350 }, danceFloorSize: { width: 200, height: 150 },
         zoom: 0.75, stagePos: { x: 100, y: 80 }, nextTableId: 16
@@ -106,17 +106,17 @@ export const WEDDING_TEMPLATES = {
           '9': 'Mixed Family', '10': 'Young Cousins', '11': 'Plus Ones'
         },
         tableConfigs: {
-          '1': { shape: 'rectangle', size: 65, capacity: 12, backgroundColor: '#fff3cd' },
-          '2': { shape: 'rectangle', size: 60, capacity: 14, backgroundColor: '#d4edda' },
-          '3': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#d4edda' },
-          '4': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#d4edda' },
-          '5': { shape: 'rectangle', size: 50, capacity: 10, backgroundColor: '#fff2e6' },
-          '6': { shape: 'rectangle', size: 50, capacity: 10, backgroundColor: '#fff2e6' },
-          '7': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '8': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '9': { shape: 'rectangle', size: 55, capacity: 10, backgroundColor: '#f8f9fa' },
-          '10': { shape: 'square', size: 35, capacity: 4, backgroundColor: '#f8d7da' },
-          '11': { shape: 'square', size: 35, capacity: 4, backgroundColor: '#f8d7da' }
+          '1': { shape: 'rectangle', size: 75, capacity: 12, backgroundColor: '#fff3cd' },
+          '2': { shape: 'rectangle', size: 70, capacity: 14, backgroundColor: '#d4edda' },
+          '3': { shape: 'circle', size: 55, capacity: 8, backgroundColor: '#d4edda' },
+          '4': { shape: 'circle', size: 55, capacity: 8, backgroundColor: '#d4edda' },
+          '5': { shape: 'rectangle', size: 60, capacity: 10, backgroundColor: '#fff2e6' },
+          '6': { shape: 'rectangle', size: 60, capacity: 10, backgroundColor: '#fff2e6' },
+          '7': { shape: 'circle', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '8': { shape: 'circle', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '9': { shape: 'rectangle', size: 65, capacity: 10, backgroundColor: '#f8f9fa' },
+          '10': { shape: 'square', size: 45, capacity: 4, backgroundColor: '#f8d7da' },
+          '11': { shape: 'square', size: 45, capacity: 4, backgroundColor: '#f8d7da' }
         },
         danceFloorPos: { x: 900, y: 320 }, danceFloorSize: { width: 180, height: 140 },
         zoom: 0.8, stagePos: { x: 80, y: 40 }, nextTableId: 12
@@ -146,16 +146,16 @@ export const WEDDING_TEMPLATES = {
           '9': 'Extended Network', '10': 'Plus Ones'
         },
         tableConfigs: {
-          '1': { shape: 'rectangle', size: 60, capacity: 8, backgroundColor: '#f8f9fa' },
-          '2': { shape: 'square', size: 50, capacity: 8, backgroundColor: '#e2e3e5' },
-          '3': { shape: 'square', size: 50, capacity: 8, backgroundColor: '#e2e3e5' },
-          '4': { shape: 'square', size: 50, capacity: 8, backgroundColor: '#e2e3e5' },
-          '5': { shape: 'square', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '6': { shape: 'square', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '7': { shape: 'square', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '8': { shape: 'square', size: 45, capacity: 8, backgroundColor: '#d1ecf1' },
-          '9': { shape: 'square', size: 40, capacity: 6, backgroundColor: '#fff2e6' },
-          '10': { shape: 'square', size: 40, capacity: 6, backgroundColor: '#fff2e6' }
+          '1': { shape: 'rectangle', size: 70, capacity: 8, backgroundColor: '#f8f9fa' },
+          '2': { shape: 'square', size: 60, capacity: 8, backgroundColor: '#e2e3e5' },
+          '3': { shape: 'square', size: 60, capacity: 8, backgroundColor: '#e2e3e5' },
+          '4': { shape: 'square', size: 60, capacity: 8, backgroundColor: '#e2e3e5' },
+          '5': { shape: 'square', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '6': { shape: 'square', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '7': { shape: 'square', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '8': { shape: 'square', size: 55, capacity: 8, backgroundColor: '#d1ecf1' },
+          '9': { shape: 'square', size: 50, capacity: 6, backgroundColor: '#fff2e6' },
+          '10': { shape: 'square', size: 50, capacity: 6, backgroundColor: '#fff2e6' }
         },
         danceFloorPos: { x: 800, y: 300 }, danceFloorSize: { width: 150, height: 150 },
         zoom: 0.9, stagePos: { x: 60, y: 60 }, nextTableId: 11
@@ -183,12 +183,12 @@ export const WEDDING_TEMPLATES = {
           '4': 'Extended Family', '5': 'Work Friends', '6': 'Neighbors'
         },
         tableConfigs: {
-          '1': { shape: 'oval', size: 50, capacity: 6, backgroundColor: '#fff3cd' },
-          '2': { shape: 'circle', size: 50, capacity: 8, backgroundColor: '#d4edda' },
-          '3': { shape: 'circle', size: 50, capacity: 8, backgroundColor: '#d1ecf1' },
-          '4': { shape: 'circle', size: 45, capacity: 8, backgroundColor: '#f8f9fa' },
-          '5': { shape: 'square', size: 40, capacity: 4, backgroundColor: '#f8d7da' },
-          '6': { shape: 'square', size: 40, capacity: 4, backgroundColor: '#fff2e6' }
+          '1': { shape: 'oval', size: 60, capacity: 6, backgroundColor: '#fff3cd' },
+          '2': { shape: 'circle', size: 60, capacity: 8, backgroundColor: '#d4edda' },
+          '3': { shape: 'circle', size: 60, capacity: 8, backgroundColor: '#d1ecf1' },
+          '4': { shape: 'circle', size: 55, capacity: 8, backgroundColor: '#f8f9fa' },
+          '5': { shape: 'square', size: 50, capacity: 4, backgroundColor: '#f8d7da' },
+          '6': { shape: 'square', size: 50, capacity: 4, backgroundColor: '#fff2e6' }
         },
         danceFloorPos: { x: 750, y: 350 }, danceFloorSize: { width: 140, height: 100 },
         zoom: 1.1, stagePos: { x: 0, y: 0 }, nextTableId: 7
