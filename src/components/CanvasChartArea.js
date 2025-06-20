@@ -1,15 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Group, Rect, Text, Circle, Line } from 'react-konva';
 import CanvasTable from './CanvasTable';
 
 const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, layoutData, onAddGuest, allGuests })=> {
   const stageRef = useRef();
+  const containerRef = useRef();
   const isLoadingRef = useRef(false);
   const saveTimeoutRef = useRef(null);
   const [nextTableId, setNextTableId] = useState(17);
   
-  // ALL STATE VARIABLES DECLARED FIRST
+  // RESPONSIVE STAGE SIZE - CRITICAL FOR MOBILE
   const [stageSize, setStageSize] = useState({ width: 1200, height: 800 });
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // ALL OTHER STATE VARIABLES
   const [zoom, setZoom] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const [isDraggingTable, setIsDraggingTable] = useState(false);
@@ -20,6 +24,8 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
   const [selectedTable, setSelectedTable] = useState(null);
   const [showAddTableMode, setShowAddTableMode] = useState(false);
   const [ghostTablePos, setGhostTablePos] = useState(null);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  
   const [tablePositions, setTablePositions] = useState({
     '1': { x: 150, y: 150 },
     '2': { x: 320, y: 150 },
@@ -52,7 +58,46 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
   // UI States
   const [showCustomizationPanel, setShowCustomizationPanel] = useState(false);
   const [customizingTableId, setCustomizingTableId] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
+
+  // MOBILE DETECTION AND RESPONSIVE SIZING
+  useEffect(() => {
+    const updateSize = () => {
+      if (!containerRef.current) return;
+      
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const isMobileDevice = window.innerWidth <= 768;
+      setIsMobile(isMobileDevice);
+      
+      if (isMobileDevice) {
+        // Mobile: Use full available width and adjust height
+        const mobileWidth = Math.max(containerRect.width - 20, 300);
+        const mobileHeight = Math.max(window.innerHeight * 0.4, 250); // 40% of screen height
+        setStageSize({ width: mobileWidth, height: mobileHeight });
+        
+        // Auto-fit zoom for mobile
+        const scaleX = mobileWidth / 1200;
+        const scaleY = mobileHeight / 800;
+        const autoZoom = Math.min(scaleX, scaleY, 1);
+        setZoom(autoZoom);
+      } else {
+        // Desktop: Use container size or default
+        const desktopWidth = Math.max(containerRect.width - 20, 800);
+        const desktopHeight = Math.max(containerRect.height - 100, 600);
+        setStageSize({ width: desktopWidth, height: desktopHeight });
+      }
+    };
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateSize, 100); // Delay for orientation change
+    });
+
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('orientationchange', updateSize);
+    };
+  }, []);
 
   // Helper function to get table label (custom or default)
   const getTableLabel = (tableId) => {
@@ -75,8 +120,10 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
       if (layoutData.tableConfigs) setTableConfigs(layoutData.tableConfigs);
       if (layoutData.danceFloorPos) setDanceFloorPos(layoutData.danceFloorPos);
       if (layoutData.danceFloorSize) setDanceFloorSize(layoutData.danceFloorSize);
-      if (layoutData.zoom) setZoom(layoutData.zoom);
-      if (layoutData.stagePos) setStagePos(layoutData.stagePos);
+      if (!isMobile) { // Don't override mobile auto-zoom
+        if (layoutData.zoom) setZoom(layoutData.zoom);
+        if (layoutData.stagePos) setStagePos(layoutData.stagePos);
+      }
       if (layoutData.nextTableId) setNextTableId(layoutData.nextTableId);
     } else {
       const savedLayout = localStorage.getItem('wedding-seating-layout');
@@ -88,8 +135,10 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
           if (layout.tableConfigs) setTableConfigs(layout.tableConfigs);
           if (layout.danceFloorPos) setDanceFloorPos(layout.danceFloorPos);
           if (layout.danceFloorSize) setDanceFloorSize(layout.danceFloorSize);
-          if (layout.zoom) setZoom(layout.zoom);
-          if (layout.stagePos) setStagePos(layout.stagePos);
+          if (!isMobile) { // Don't override mobile auto-zoom
+            if (layout.zoom) setZoom(layout.zoom);
+            if (layout.stagePos) setStagePos(layout.stagePos);
+          }
           if (layout.nextTableId) setNextTableId(layout.nextTableId);
           console.log('Layout loaded from localStorage');
         } catch (error) {
@@ -101,7 +150,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
     setTimeout(() => {
       isLoadingRef.current = false;
     }, 100);
-  }, [layoutData]);
+  }, [layoutData, isMobile]);
 
   // EFFECT TO SAVE LAYOUT WHEN STATE CHANGES - WITH DEBOUNCING
   React.useEffect(() => {
@@ -140,32 +189,7 @@ const CanvasChartArea = ({ assignments, onRemoveGuest, onDrop, onLayoutChange, l
         clearTimeout(saveTimeoutRef.current);
       }
     };
-      }, [tablePositions, tableLabels, tableConfigs, danceFloorPos, danceFloorSize, zoom, stagePos, nextTableId, isDraggingTable, onLayoutChange]);
-
-      // Replace the mobile detection useEffect in CanvasChartArea.js
-React.useEffect(() => {
-  const checkMobile = () => {
-    const mobile = window.innerWidth <= 768;
-    setIsMobile(mobile);
-    
-    // Better mobile canvas sizing
-    if (mobile) {
-      const availableWidth = window.innerWidth - 16; // Account for padding
-      const availableHeight = Math.max(window.innerHeight * 0.6, 300); // 60% of screen height
-      
-      setStageSize({ 
-        width: Math.max(availableWidth, 350), // Minimum width for usability
-        height: Math.max(availableHeight, 350) // Minimum height
-      });
-    } else {
-      setStageSize({ width: 1200, height: 800 });
-    }
-  };
-
-  checkMobile();
-  window.addEventListener('resize', checkMobile);
-  return () => window.removeEventListener('resize', checkMobile);
-}, []);
+  }, [tablePositions, tableLabels, tableConfigs, danceFloorPos, danceFloorSize, zoom, stagePos, nextTableId, isDraggingTable, onLayoutChange]);
 
   // HELPER FUNCTIONS
   const snapToGrid = (pos) => ({
@@ -173,35 +197,38 @@ React.useEffect(() => {
     y: Math.round(pos.y / 20) * 20
   });
 
-  // const checkCollision = (tableId, newPos, excludeId = null) => {
-  //   for (const [otherId, otherPos] of Object.entries(tablePositions)) {
-  //     if (otherId !== tableId && otherId !== excludeId) {
-  //       const distance = Math.sqrt(
-  //         Math.pow(newPos.x - otherPos.x, 2) + 
-  //         Math.pow(newPos.y - otherPos.y, 2)
-  //       );
-  //       if (distance < 120) {
-  //         return true;
-  //       }
-  //     }
-  //   }
+  const checkCollision = (tableId, newPos, excludeId = null) => {
+    for (const [otherId, otherPos] of Object.entries(tablePositions)) {
+      if (otherId !== tableId && otherId !== excludeId) {
+        const distance = Math.sqrt(
+          Math.pow(newPos.x - otherPos.x, 2) + 
+          Math.pow(newPos.y - otherPos.y, 2)
+        );
+        if (distance < 120) {
+          return true;
+        }
+      }
+    }
     
-  //   // Check collision with dance floor
-  //   const danceFloorDistance = Math.sqrt(
-  //     Math.pow(newPos.x - danceFloorPos.x, 2) + 
-  //     Math.pow(newPos.y - danceFloorPos.y, 2)
-  //   );
-  //   if (danceFloorDistance < 120) {
-  //     return true;
-  //   }
+    // Check collision with dance floor
+    const danceFloorDistance = Math.sqrt(
+      Math.pow(newPos.x - danceFloorPos.x, 2) + 
+      Math.pow(newPos.y - danceFloorPos.y, 2)
+    );
+    if (danceFloorDistance < 120) {
+      return true;
+    }
     
-  //   return false;
-  // };
+    return false;
+  };
 
   const handleAddTable = () => {
     setShowAddTableMode(true);
     setSelectedTable(null);
     setShowCustomizationPanel(false);
+    if (isMobile) {
+      setShowMobileSidebar(true);
+    }
   };
 
   const handleRemoveTable = (tableId) => {
@@ -241,6 +268,7 @@ React.useEffect(() => {
         
         setSelectedTable(null);
         setShowCustomizationPanel(false);
+        if (isMobile) setShowMobileSidebar(false);
         console.log(`${getTableLabel(tableId)} removed successfully`);
       }, 100);
     } else {
@@ -264,6 +292,7 @@ React.useEffect(() => {
       
       setSelectedTable(null);
       setShowCustomizationPanel(false);
+      if (isMobile) setShowMobileSidebar(false);
       console.log(`Empty ${getTableLabel(tableId)} removed successfully`);
     }
   };
@@ -295,6 +324,9 @@ React.useEffect(() => {
     setCustomizingTableId(tableId);
     setShowCustomizationPanel(true);
     setSelectedTable(tableId);
+    if (isMobile) {
+      setShowMobileSidebar(true);
+    }
   };
 
   const applyTableCustomization = (tableId, config) => {
@@ -329,6 +361,7 @@ React.useEffect(() => {
     
     setShowCustomizationPanel(false);
     setCustomizingTableId(null);
+    if (isMobile) setShowMobileSidebar(false);
     console.log(`${getTableLabel(tableId)} customized: ${config.shape}, size ${config.size}, capacity ${config.capacity}`);
   };
 
@@ -344,10 +377,10 @@ React.useEffect(() => {
       
       const snappedPos = snapToGrid(adjustedPointer);
       
-      // if (checkCollision(null, snappedPos)) {
-      //   alert('Cannot place table here - too close to another object!');
-      //   return;
-      // }
+      if (checkCollision(null, snappedPos)) {
+        alert('Cannot place table here - too close to another object!');
+        return;
+      }
       
       const newTableId = nextTableId.toString();
       setTablePositions(prev => ({
@@ -364,9 +397,11 @@ React.useEffect(() => {
       setNextTableId(prev => prev + 1);
       setShowAddTableMode(false);
       setGhostTablePos(null);
+      if (isMobile) setShowMobileSidebar(false);
     } else {
       setSelectedTable(null);
       setShowCustomizationPanel(false);
+      if (isMobile) setShowMobileSidebar(false);
     }
   };
 
@@ -407,8 +442,17 @@ React.useEffect(() => {
   };
 
   const handleResetZoom = () => {
-    setZoom(1);
-    setStagePos({ x: 0, y: 0 });
+    if (isMobile) {
+      // Mobile: Auto-fit zoom
+      const scaleX = stageSize.width / 1200;
+      const scaleY = stageSize.height / 800;
+      const autoZoom = Math.min(scaleX, scaleY, 1);
+      setZoom(autoZoom);
+      setStagePos({ x: 0, y: 0 });
+    } else {
+      setZoom(1);
+      setStagePos({ x: 0, y: 0 });
+    }
   };
 
   const clearSavedLayout = () => {
@@ -439,12 +483,12 @@ React.useEffect(() => {
       setTableConfigs({});
       setDanceFloorPos({ x: 1060, y: 180 });
       setDanceFloorSize({ width: 180, height: 120 });
-      setZoom(1);
-      setStagePos({ x: 0, y: 0 });
+      handleResetZoom();
       setNextTableId(17);
       setSelectedTable(null);
       setShowAddTableMode(false);
       setShowCustomizationPanel(false);
+      if (isMobile) setShowMobileSidebar(false);
       
       setTimeout(() => {
         isLoadingRef.current = false;
@@ -452,6 +496,7 @@ React.useEffect(() => {
     }
   };
 
+  // MOBILE-FRIENDLY WHEEL/PINCH HANDLING
   const handleWheel = (e) => {
     e.evt.preventDefault();
     
@@ -466,7 +511,7 @@ React.useEffect(() => {
     };
     
     const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
-    const clampedScale = Math.max(0.3, Math.min(3, newScale));
+    const clampedScale = Math.max(0.2, Math.min(3, newScale));
     
     setZoom(clampedScale);
     
@@ -483,15 +528,23 @@ React.useEffect(() => {
   };
 
   const handleTableDragEnd = (tableId, newPosition) => {
-  const snappedPos = snapToGrid(newPosition);
-  
-  setTablePositions(prev => ({
-    ...prev,
-    [tableId]: snappedPos
-  }));
-  
-  setIsDraggingTable(false);
-};
+    const snappedPos = snapToGrid(newPosition);
+    
+    if (checkCollision(tableId, snappedPos)) {
+      alert('Cannot place table here - too close to another table!');
+      setIsDraggingTable(false);
+      return;
+    }
+    
+    setTablePositions(prev => ({
+      ...prev,
+      [tableId]: snappedPos
+    }));
+    
+    setTimeout(() => {
+      setIsDraggingTable(false);
+    }, 100);
+  };
 
   const handleSweetheartDragEnd = (e) => {
     const newPos = e.target.position();
@@ -513,6 +566,9 @@ React.useEffect(() => {
 
   const handleTableClick = (tableId, guestList) => {
     setSelectedTable(tableId);
+    if (isMobile) {
+      setShowMobileSidebar(true);
+    }
   };
 
   const handleSlotClick = (guestName, fromTableId, toTableId = null) => {
@@ -612,332 +668,171 @@ React.useEffect(() => {
 
   // Render the main component
   return (
-    <div className="canvas-chart-area" style={{ position: 'relative', height: 'calc(100vh - 100px)', overflow: 'hidden' }}>
-      {/* Compact Header */}
-     
-<div style={{ 
-  position: 'sticky',
-  top: 0,
-  zIndex: 100,
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-  backdropFilter: 'blur(10px)',
-  borderBottom: '1px solid rgba(222, 226, 230, 0.5)',
-  padding: '0.75rem 1.25rem',
-  marginBottom: '1rem',
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
-}}>
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    maxWidth: '1400px',
-    margin: '0 auto'
-  }}>
-    {/* Left: Title with Status */}
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-      <div>
+    <div className="canvas-chart-area" style={{ position: 'relative' }} ref={containerRef}>
+      {/* MOBILE-OPTIMIZED HEADER */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: isMobile ? '0.5rem' : '1rem',
+        padding: isMobile ? '0.5rem' : '0.75rem',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        border: '1px solid #dee2e6',
+        flexWrap: isMobile ? 'wrap' : 'nowrap',
+        gap: isMobile ? '0.5rem' : '1rem'
+      }}>
         <h3 style={{ 
           margin: 0, 
-          fontSize: '1.1rem', 
-          fontWeight: '700',
+          fontSize: isMobile ? '1rem' : '1.25rem', 
           color: '#495057',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
+          flex: isMobile ? '1 1 100%' : 'none',
+          textAlign: isMobile ? 'center' : 'left'
         }}>
-          <span style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            💺 SeatSaver
-          </span>
-          <span style={{ 
-            fontSize: '0.7rem',
-            color: '#6c757d',
-            fontWeight: '400',
-            marginLeft: '0.5rem'
-          }}>
-            Layout Designer
-          </span>
+          {isMobile ? 'Layout' : 'SeatSaver - Seating Chart Layout'}
         </h3>
-      </div>
-      
-      {/* Status Indicators */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '0.75rem',
-        alignItems: 'center'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.4rem',
-          padding: '0.3rem 0.7rem',
-          backgroundColor: '#e8f5e8',
-          borderRadius: '20px',
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          color: '#28a745'
-        }}>
-          <span style={{ animation: 'pulse 2s infinite' }}>●</span>
-          <span>Auto-save ON</span>
-        </div>
-      </div>
-    </div>
-
-    {/* Right: Action Groups */}
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'center',
-      gap: '1rem'
-    }}>
-      {/* Table Management */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.4rem',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '12px',
-        border: '1px solid #e9ecef'
-      }}>
-        <button 
-          onClick={handleAddTable} 
-          className={`btn ${showAddTableMode ? 'btn-success' : 'btn-primary'}`}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.5rem 0.9rem',
-            backgroundColor: showAddTableMode ? '#28a745' : '#0d6efd',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '0.8rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-          }}
-        >
-          {showAddTableMode ? (
-            <>
-              <span>📍</span>
-              <span>Click to Place</span>
-            </>
-          ) : (
-            <>
-              <span>➕</span>
-              <span>Add Table</span>
-            </>
-          )}
-        </button>
         
-        {showAddTableMode && (
+        <div style={{ 
+          display: 'flex', 
+          gap: isMobile ? '4px' : '8px', 
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          justifyContent: isMobile ? 'center' : 'flex-end',
+          flex: isMobile ? '1 1 100%' : 'none'
+        }}>
+          {/* MOBILE: Show/Hide Controls Button */}
+          {isMobile && (
+            <button 
+              onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+              className="btn btn-sm btn-primary"
+              style={{ 
+                fontSize: '0.75rem',
+                padding: '0.4rem 0.8rem',
+                minWidth: '44px'
+              }}
+            >
+              {showMobileSidebar ? '❌ Close' : '⚙️ Tools'}
+            </button>
+          )}
+          
+          {/* Quick Actions */}
           <button 
-            onClick={() => {
-              setShowAddTableMode(false);
-              setGhostTablePos(null);
-            }}
-            style={{
-              padding: '0.5rem 0.7rem',
-              backgroundColor: 'transparent',
-              color: '#dc3545',
-              border: '1px solid #dc3545',
-              borderRadius: '8px',
-              fontSize: '0.75rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#dc3545';
-              e.target.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = '#dc3545';
+            onClick={handleAddTable} 
+            className={`btn btn-sm ${showAddTableMode ? 'btn-success' : 'btn-primary'}`}
+            style={{ 
+              fontSize: isMobile ? '0.75rem' : '0.875rem',
+              minWidth: isMobile ? '44px' : 'auto',
+              padding: isMobile ? '0.4rem 0.6rem' : '0.375rem 0.75rem'
             }}
           >
-            Cancel
+            {showAddTableMode ? (isMobile ? '📍' : '📍 Click to Place') : (isMobile ? '➕' : '➕ Add Table')}
           </button>
-        )}
-      </div>
-
-      {/* View Controls */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        gap: '0.3rem',
-        padding: '0.4rem',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '12px',
-        border: '1px solid #e9ecef'
-      }}>
-        <button 
-          onClick={handleZoomOut} 
-          style={{
-            padding: '0.4rem 0.6rem',
-            backgroundColor: 'white',
-            border: '1px solid #dee2e6',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.8rem',
-            transition: 'all 0.2s ease'
-          }}
-          title="Zoom Out"
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-        >
-          🔍-
-        </button>
-        
-        <div style={{
-          padding: '0.4rem 0.8rem',
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          color: '#495057',
-          minWidth: '55px',
-          textAlign: 'center',
-          backgroundColor: 'white',
-          borderRadius: '6px',
-          border: '1px solid #dee2e6'
-        }}>
-          {Math.round(zoom * 100)}%
+          
+          {showAddTableMode && (
+            <button 
+              onClick={() => {
+                setShowAddTableMode(false);
+                setGhostTablePos(null);
+                if (isMobile) setShowMobileSidebar(false);
+              }} 
+              className="btn btn-sm btn-outline-danger"
+              style={{ 
+                fontSize: isMobile ? '0.75rem' : '0.875rem',
+                minWidth: isMobile ? '44px' : 'auto',
+                padding: isMobile ? '0.4rem 0.6rem' : '0.375rem 0.75rem'
+              }}
+            >
+              {isMobile ? '❌' : 'Cancel'}
+            </button>
+          )}
+          
+          {/* View Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button 
+              onClick={handleZoomOut} 
+              className="btn btn-sm btn-outline-secondary" 
+              title="Zoom Out"
+              style={{ 
+                minWidth: isMobile ? '44px' : 'auto',
+                minHeight: isMobile ? '44px' : 'auto',
+                padding: isMobile ? '0.5rem' : '0.375rem 0.75rem'
+              }}
+            >
+              🔍-
+            </button>
+            {!isMobile && (
+              <span style={{ fontSize: '0.75rem', minWidth: '50px', textAlign: 'center', color: '#6c757d' }}>
+                {Math.round(zoom * 100)}%
+              </span>
+            )}
+            <button 
+              onClick={handleZoomIn} 
+              className="btn btn-sm btn-outline-secondary" 
+              title="Zoom In"
+              style={{ 
+                minWidth: isMobile ? '44px' : 'auto',
+                minHeight: isMobile ? '44px' : 'auto',
+                padding: isMobile ? '0.5rem' : '0.375rem 0.75rem'
+              }}
+            >
+              🔍+
+            </button>
+            <button 
+              onClick={handleResetZoom} 
+              className="btn btn-sm btn-outline-secondary" 
+              title="Reset View"
+              style={{ 
+                minWidth: isMobile ? '44px' : 'auto',
+                minHeight: isMobile ? '44px' : 'auto',
+                padding: isMobile ? '0.5rem' : '0.375rem 0.75rem'
+              }}
+            >
+              🎯
+            </button>
+          </div>
+          
+          {/* Additional Controls - Hidden on mobile or in compact form */}
+          {!isMobile && (
+            <>
+              <button 
+                onClick={clearSavedLayout} 
+                className="btn btn-sm btn-outline-warning" 
+                title="Reset Layout"
+              >
+                🔄
+              </button>
+              <button 
+                onClick={exportImage} 
+                className="btn btn-sm btn-primary" 
+                title="Export as Image"
+              >
+                📷
+              </button>
+            </>
+          )}
         </div>
-        
-        <button 
-          onClick={handleZoomIn} 
-          style={{
-            padding: '0.4rem 0.6rem',
-            backgroundColor: 'white',
-            border: '1px solid #dee2e6',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.8rem',
-            transition: 'all 0.2s ease'
-          }}
-          title="Zoom In"
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-        >
-          🔍+
-        </button>
-        
-        <button 
-          onClick={handleResetZoom} 
-          style={{
-            padding: '0.4rem 0.6rem',
-            backgroundColor: 'white',
-            border: '1px solid #dee2e6',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '0.8rem',
-            transition: 'all 0.2s ease'
-          }}
-          title="Reset View"
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-        >
-          🎯
-        </button>
       </div>
-
-      {/* Quick Actions */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        gap: '0.5rem'
-      }}>
-        <button 
-          onClick={clearSavedLayout} 
-          style={{
-            padding: '0.5rem 0.8rem',
-            backgroundColor: 'white',
-            color: '#fd7e14',
-            border: '1px solid #fd7e14',
-            borderRadius: '8px',
-            fontSize: '0.75rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          title="Reset Layout"
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#fd7e14';
-            e.target.style.color = 'white';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'white';
-            e.target.style.color = '#fd7e14';
-          }}
-        >
-          🔄 Reset
-        </button>
-        
-        <button 
-          onClick={exportImage} 
-          style={{
-            padding: '0.5rem 0.8rem',
-            backgroundColor: '#17a2b8',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '0.75rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}
-          title="Export as Image"
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#138496';
-            e.target.style.transform = 'translateY(-1px)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = '#17a2b8';
-            e.target.style.transform = 'translateY(0)';
-          }}
-        >
-          📷 Export
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
       {/* Main Layout Container */}
       <div style={{ 
-  display: 'flex', 
-  gap: '1rem', 
-  position: 'relative',
-  height: '100%',
-  overflow: 'hidden'
-}}>
+        display: 'flex', 
+        gap: isMobile ? '0' : '1rem', 
+        position: 'relative',
+        flexDirection: isMobile ? 'column' : 'row'
+      }}>
         
         {/* Canvas Area */}
         <div 
-  style={{ 
-    flex: '1',
-    position: 'relative',
-    minWidth: 0, // Important for flex shrinking
-    overflow: 'hidden'
-  }}
+          style={{ 
+            flex: '1',
+            position: 'relative',
+            order: isMobile ? 2 : 1
+          }}
           onDrop={handleCanvasDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
         >
-          <div 
+          <div
             style={{ 
               border: '2px dashed #ddd', 
               borderRadius: '8px', 
@@ -945,8 +840,7 @@ React.useEffect(() => {
               borderColor: dragOverTable ? '#0d6efd' : '#ddd',
               backgroundColor: dragOverTable ? 'rgba(13, 110, 253, 0.05)' : 'transparent',
               cursor: showAddTableMode ? 'crosshair' : 'default',
-              width: '100%',
-              height: isMobile ? 'calc(100% - 20px)' : 'auto'
+              touchAction: 'none' // Important for mobile touch handling
             }}
           >
             <Stage
@@ -961,40 +855,36 @@ React.useEffect(() => {
               onDragEnd={handleStageDragEnd}
               onWheel={handleWheel}
               onClick={handleCanvasClick}
+              onTap={handleCanvasClick} // Mobile tap support
               onMouseMove={handleMouseMove}
               perfectDrawEnabled={false}
-              listening={!isDraggingTable}
             >
               <Layer>
                 <Rect
-                  width={stageSize.width}
-                  height={stageSize.height}
+                  width={stageSize.width * 2} // Larger background for panning
+                  height={stageSize.height * 2}
+                  x={-stageSize.width / 2}
+                  y={-stageSize.height / 2}
                   fill="#ffffff"
                 />
                 
-                {/* Grid */}
-                 {/* THIS IS WHERE YOUR GRID CODE SHOULD BE */}
-                {/* Vertical grid lines - change 20 to 40 */}
-                {Array.from({ length: Math.ceil(stageSize.width / 40) }).map((_, i) => (
+                {/* Grid - Lighter on mobile */}
+                {Array.from({ length: Math.ceil(stageSize.width * 2 / 20) }).map((_, i) => (
                   <Line
                     key={`grid-v-${i}`}
-                    points={[i * 40, 0, i * 40, stageSize.height]}
-                    stroke="rgba(0,0,0,0.05)"
+                    points={[i * 20 - stageSize.width / 2, -stageSize.height / 2, i * 20 - stageSize.width / 2, stageSize.height * 1.5]}
+                    stroke={isMobile ? "rgba(0,0,0,0.02)" : "rgba(0,0,0,0.05)"}
                     strokeWidth={1}
                   />
                 ))}
-
-                {/* Horizontal grid lines - change 20 to 40 */}
-                {Array.from({ length: Math.ceil(stageSize.height / 40) }).map((_, i) => (
+                {Array.from({ length: Math.ceil(stageSize.height * 2 / 20) }).map((_, i) => (
                   <Line
                     key={`grid-h-${i}`}
-                    points={[0, i * 40, stageSize.width, i * 40]}
-                    stroke="rgba(0,0,0,0.05)"
+                    points={[-stageSize.width / 2, i * 20 - stageSize.height / 2, stageSize.width * 1.5, i * 20 - stageSize.height / 2]}
+                    stroke={isMobile ? "rgba(0,0,0,0.02)" : "rgba(0,0,0,0.05)"}
                     strokeWidth={1}
                   />
                 ))}
-                
-                {/* Sweetheart Table - REMOVED */}
                 
                 {/* Dance Floor */}
                 <Group 
@@ -1019,22 +909,22 @@ React.useEffect(() => {
                   />
                   <Text
                     text="Dance Floor"
-                    fontSize={18}
+                    fontSize={isMobile ? 14 : 18}
                     fontFamily="Arial"
                     fontStyle="bold"
                     fill="#1565c0"
-                    x={-45}
-                    y={-9}
+                    x={isMobile ? -35 : -45}
+                    y={isMobile ? -7 : -9}
                     shadowBlur={2}
                     shadowColor="rgba(0,0,0,0.3)"
                   />
                   <Text
                     text={`${danceFloorSize.width}×${danceFloorSize.height}`}
-                    fontSize={10}
+                    fontSize={isMobile ? 8 : 10}
                     fontFamily="Arial"
                     fill="#1976d2"
-                    x={-25}
-                    y={8}
+                    x={isMobile ? -20 : -25}
+                    y={isMobile ? 6 : 8}
                     opacity={0.7}
                   />
                 </Group>
@@ -1073,7 +963,7 @@ React.useEffect(() => {
                     )}
                     <Text
                       text={`Table ${nextTableId}`}
-                      fontSize={14}
+                      fontSize={isMobile ? 12 : 14}
                       fontFamily="Arial"
                       fontWeight="bold"
                       fill="#0d6efd"
@@ -1083,17 +973,19 @@ React.useEffect(() => {
                       align="center"
                       opacity={0.7}
                     />
-                    <Text
-                      text={`${newTableConfig.shape} • ${newTableConfig.capacity} seats`}
-                      fontSize={10}
-                      fontFamily="Arial"
-                      fill="#0d6efd"
-                      x={-50}
-                      y={6}
-                      width={100}
-                      align="center"
-                      opacity={0.7}
-                    />
+                    {!isMobile && (
+                      <Text
+                        text={`${newTableConfig.shape} • ${newTableConfig.capacity} seats`}
+                        fontSize={10}
+                        fontFamily="Arial"
+                        fill="#0d6efd"
+                        x={-50}
+                        y={6}
+                        width={100}
+                        align="center"
+                        opacity={0.7}
+                      />
+                    )}
                   </Group>
                 )}
                 
@@ -1115,577 +1007,553 @@ React.useEffect(() => {
                     onAddGuest={onAddGuest}
                     isHighlighted={dragOverTable === tableId}
                     isSelected={selectedTable === tableId}
-/>
+                  />
                 ))}
               </Layer>
             </Stage>
           </div>
         </div>
 
-        {/* Modern Sidebar Panels */}
-        <div style={{ 
-  width: '380px', // Increased width for better content fit
-  minWidth: '380px', // Prevent shrinking
-  display: 'flex', 
-  flexDirection: 'column', 
-  gap: '1rem',
-  maxHeight: '100%',
-  overflowY: 'auto', // Enable vertical scrolling
-  paddingRight: '8px' // Space for scrollbar
-}}>
-          
-          {/* New Table Configuration Panel (only when adding) */}
-          {showAddTableMode && (
-            <div style={{ 
-              backgroundColor: '#ffffff',
-              border: '2px solid #0d6efd',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              boxShadow: '0 4px 12px rgba(13, 110, 253, 0.15)',
-              flexShrink: 0
-            }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                marginBottom: '1.25rem',
-                paddingBottom: '0.75rem',
-                borderBottom: '2px solid #e9ecef'
-              }}>
-                <span style={{ 
-                  fontSize: '1.25rem', 
-                  fontWeight: 'bold', 
-                  color: '#0d6efd',
-                  marginRight: '0.5rem'
-                }}>
-                  🆕
-                </span>
-                <h4 style={{ margin: 0, color: '#495057', fontSize: '1.1rem' }}>
-                  Configure New Table
-                </h4>
-              </div>
-              
-              {/* Shape Selection */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '0.5rem',
-                  color: '#495057',
-                  fontSize: '0.9rem'
-                }}>
-                  Shape
-                </label>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: '1fr 1fr', 
-                  gap: '0.5rem' 
-                }}>
-                  {['circle', 'rectangle', 'square', 'oval'].map(shape => (
-                    <button
-                      key={shape}
-                      onClick={() => setNewTableConfig(prev => ({ ...prev, shape }))}
-                      style={{
-                        padding: '0.75rem',
-                        border: `2px solid ${newTableConfig.shape === shape ? '#0d6efd' : '#dee2e6'}`,
-                        borderRadius: '8px',
-                        backgroundColor: newTableConfig.shape === shape ? '#e7f3ff' : '#ffffff',
-                        color: newTableConfig.shape === shape ? '#0d6efd' : '#6c757d',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease',
-                        fontWeight: newTableConfig.shape === shape ? '600' : '400',
-                        fontSize: '0.85rem',
-                        textTransform: 'capitalize'
-                      }}
-                    >
-                      {shape === 'circle' && '⭕'} 
-                      {shape === 'rectangle' && '▭'} 
-                      {shape === 'square' && '⬜'} 
-                      {shape === 'oval' && '⭕'} 
-                      <br />
-                      {shape}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Color Selection */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '0.5rem',
-                  color: '#495057',
-                  fontSize: '0.9rem'
-                }}>
-                  Background Color
-                </label>
-                <div style={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: 'repeat(4, 1fr)', 
-                  gap: '0.5rem',
-                  marginBottom: '0.75rem'
-                }}>
-                  {[
-                    { color: '#f8f9fa', name: 'Default' },
-                    { color: '#fff3cd', name: 'Gold' },
-                    { color: '#d1ecf1', name: 'Blue' },
-                    { color: '#d4edda', name: 'Green' },
-                    { color: '#f8d7da', name: 'Pink' },
-                    { color: '#e2e3e5', name: 'Gray' },
-                    { color: '#fff2e6', name: 'Orange' },
-                    { color: '#e6f3ff', name: 'Light Blue' }
-                  ].map(({ color, name }) => (
-                    <button
-                      key={color}
-                      onClick={() => setNewTableConfig(prev => ({ ...prev, backgroundColor: color }))}
-                      style={{
-                        width: '100%',
-                        height: '40px',
-                        border: `3px solid ${newTableConfig.backgroundColor === color ? '#0d6efd' : '#dee2e6'}`,
-                        borderRadius: '8px',
-                        backgroundColor: color,
-                        cursor: 'pointer',
-                        position: 'relative',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.7rem',
-                        fontWeight: '600',
-                        color: color === '#f8f9fa' || color === '#fff3cd' || color === '#fff2e6' || color === '#e6f3ff' ? '#495057' : '#333'
-                      }}
-                      title={name}
-                    >
-                      {newTableConfig.backgroundColor === color && '✓'}
-                    </button>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="color"
-                    value={newTableConfig.backgroundColor}
-                    onChange={(e) => setNewTableConfig(prev => ({ ...prev, backgroundColor: e.target.value }))}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer'
-                    }}
-                  />
-                  <span style={{ fontSize: '0.85rem', color: '#6c757d' }}>
-                    Custom Color: {newTableConfig.backgroundColor}
-                  </span>
-                </div>
-              </div>
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '0.5rem',
-                  color: '#495057',
-                  fontSize: '0.9rem'
-                }}>
-                  Size: {newTableConfig.size}px
-                </label>
-                <input 
-                  type="range" 
-                  min="20" 
-                  max="80" 
-                  value={newTableConfig.size}
-                  onChange={(e) => setNewTableConfig(prev => ({ ...prev, size: parseInt(e.target.value) }))}
-                  style={{ 
-                    width: '100%',
-                    height: '6px',
-                    borderRadius: '3px',
-                    background: '#e9ecef',
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}
-                />
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  marginTop: '0.25rem',
-                  fontSize: '0.75rem',
-                  color: '#6c757d'
-                }}>
-                  <span>Small (20)</span>
-                  <span>Large (80)</span>
-                </div>
-              </div>
-              
-              {/* Capacity Slider */}
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ 
-                  display: 'block', 
-                  fontWeight: '600', 
-                  marginBottom: '0.5rem',
-                  color: '#495057',
-                  fontSize: '0.9rem'
-                }}>
-                  Capacity: {newTableConfig.capacity} guests
-                </label>
-                <input 
-                  type="range" 
-                  min="2" 
-                  max="20" 
-                  value={newTableConfig.capacity}
-                  onChange={(e) => setNewTableConfig(prev => ({ ...prev, capacity: parseInt(e.target.value) }))}
-                  style={{ 
-                    width: '100%',
-                    height: '6px',
-                    borderRadius: '3px',
-                    background: '#e9ecef',
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}
-                />
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  marginTop: '0.25rem',
-                  fontSize: '0.75rem',
-                  color: '#6c757d'
-                }}>
-                  <span>2 guests</span>
-                  <span>20 guests</span>
-                </div>
-              </div>
-              
-              {/* Preview */}
-              <div style={{ 
-                textAlign: 'center',
-                padding: '1rem',
-                backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                color: '#6c757d'
-              }}>
-                <div style={{ 
-                  width: '60px', 
-                  height: '60px', 
-                  backgroundColor: newTableConfig.backgroundColor,
-                  border: '2px solid #0d6efd',
-                  borderRadius: newTableConfig.shape === 'circle' ? '50%' : '8px',
-                  margin: '0 auto 0.5rem auto',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  fontWeight: 'bold',
-                  color: '#495057'
-                }}>
-                  Preview
-                </div>
-                <strong>Configuration:</strong><br />
-                {newTableConfig.shape} • size {newTableConfig.size} • {newTableConfig.capacity} seats
-                <br />
-                <small style={{ color: '#0d6efd', marginTop: '0.5rem', display: 'block' }}>
-                  💡 Click anywhere on the canvas to place
-                </small>
-              </div>
-            </div>
-          )}
-          
-          {/* Table Selection Panel */}
-          {selectedTable && !showAddTableMode && (
-            <div style={{ 
-              backgroundColor: '#ffffff',
-              border: '2px solid #28a745',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              boxShadow: '0 4px 12px rgba(40, 167, 69, 0.15)'
-            }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                marginBottom: '1.25rem',
-                paddingBottom: '0.75rem',
-                borderBottom: '2px solid #e9ecef'
-              }}>
-                <span style={{ 
-                  fontSize: '1.25rem', 
-                  fontWeight: 'bold', 
-                  color: '#28a745',
-                  marginRight: '0.5rem'
-                }}>
-                  ✨
-                </span>
-                <h4 style={{ margin: 0, color: '#495057', fontSize: '1.1rem' }}>
-                  {getTableLabel(selectedTable)}
-                </h4>
-              </div>
-              
-              {/* Table Info */}
-              <div style={{ marginBottom: '1.25rem' }}>
-                <div style={{ 
-                  display: 'grid',
-                  gridTemplateColumns: 'auto 1fr',
-                  gap: '0.5rem 1rem',
-                  fontSize: '0.9rem'
-                }}>
-                  <span style={{ fontWeight: '600', color: '#6c757d' }}>Shape:</span>
-                  <span style={{ textTransform: 'capitalize' }}>{getTableConfig(selectedTable).shape}</span>
-                  
-                  <span style={{ fontWeight: '600', color: '#6c757d' }}>Size:</span>
-                  <span>{getTableConfig(selectedTable).size}px</span>
-                  
-                  <span style={{ fontWeight: '600', color: '#6c757d' }}>Capacity:</span>
-                  <span>{getTableConfig(selectedTable).capacity} guests</span>
-                  
-                  <span style={{ fontWeight: '600', color: '#6c757d' }}>Background:</span>
-                  <div style={{ 
-                    width: '20px', 
-                    height: '20px', 
-                    backgroundColor: getTableConfig(selectedTable).backgroundColor,
-                    border: '1px solid #dee2e6',
-                    borderRadius: '4px',
-                    display: 'inline-block'
-                  }} />
-                  
-                  <span style={{ fontWeight: '600', color: '#6c757d' }}>Current:</span>
-                  <span>{assignments.filter(a => a.table === selectedTable).length} guests</span>
-                </div>
-              </div>
-              
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button 
-                  onClick={() => handleEditLabel(selectedTable)} 
-                  style={{
-                    padding: '0.75rem',
-                    border: '2px solid #17a2b8',
-                    borderRadius: '8px',
-                    backgroundColor: '#ffffff',
-                    color: '#17a2b8',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = '#17a2b8';
-                    e.target.style.color = '#ffffff';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.backgroundColor = '#ffffff';
-                    e.target.style.color = '#17a2b8';
-                  }}
-                >
-                  ✏️ Edit Label
-                </button>
-                
-                <button 
-                  onClick={() => handleCustomizeTable(selectedTable)} 
-                  style={{
-                    padding: '0.75rem',
-                    border: '2px solid #fd7e14',
-                    borderRadius: '8px',
-                    backgroundColor: '#ffffff',
-                    color: '#fd7e14',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = '#fd7e14';
-                    e.target.style.color = '#ffffff';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.backgroundColor = '#ffffff';
-                    e.target.style.color = '#fd7e14';
-                  }}
-                >
-                  🎨 Customize Table
-                </button>
-                
-                <button 
-                  onClick={() => handleRemoveTable(selectedTable)} 
-                  style={{
-                    padding: '0.75rem',
-                    border: '2px solid #dc3545',
-                    borderRadius: '8px',
-                    backgroundColor: '#ffffff',
-                    color: '#dc3545',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = '#dc3545';
-                    e.target.style.color = '#ffffff';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.backgroundColor = '#ffffff';
-                    e.target.style.color = '#dc3545';
-                  }}
-                >
-                  🗑️ Remove Table
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {/* Table Customization Panel */}
-          {showCustomizationPanel && customizingTableId && (
-            <div style={{ 
-              backgroundColor: '#ffffff',
-              border: '2px solid #fd7e14',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              boxShadow: '0 4px 12px rgba(253, 126, 20, 0.15)',
+        {/* MOBILE SIDEBAR OVERLAY OR DESKTOP SIDEBAR */}
+        {((!isMobile) || (isMobile && showMobileSidebar)) && (
+          <div style={{ 
+            width: isMobile ? '100%' : '320px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: '1rem',
+            order: isMobile ? 1 : 2,
+            position: isMobile ? 'fixed' : 'static',
+            top: isMobile ? '0' : 'auto',
+            left: isMobile ? '0' : 'auto',
+            right: isMobile ? '0' : 'auto',
+            bottom: isMobile ? '0' : 'auto',
+            backgroundColor: isMobile ? 'rgba(0,0,0,0.8)' : 'transparent',
+            zIndex: isMobile ? 1000 : 'auto',
+            padding: isMobile ? '1rem' : '0',
+            overflowY: isMobile ? 'auto' : 'visible',
+            maxHeight: isMobile ? '100vh' : 'none'
+          }}>
+            
+            {/* Mobile: Inner container with white background */}
+            <div style={{
+              backgroundColor: isMobile ? 'white' : 'transparent',
+              borderRadius: isMobile ? '12px' : '0',
+              padding: isMobile ? '1rem' : '0',
+              maxHeight: isMobile ? '80vh' : 'none',
+              overflowY: isMobile ? 'auto' : 'visible',
               position: 'relative'
             }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                marginBottom: '1.25rem',
-                paddingBottom: '0.75rem',
-                borderBottom: '2px solid #e9ecef'
-              }}>
-                <span style={{ 
-                  fontSize: '1.25rem', 
-                  fontWeight: 'bold', 
-                  color: '#fd7e14',
-                  marginRight: '0.5rem'
+              
+              {/* Mobile: Close button */}
+              {isMobile && (
+                <button
+                  onClick={() => setShowMobileSidebar(false)}
+                  style={{
+                    position: 'absolute',
+                    top: '0.5rem',
+                    right: '0.5rem',
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer',
+                    color: '#6c757d',
+                    zIndex: 1001,
+                    padding: '0.25rem'
+                  }}
+                >
+                  ×
+                </button>
+              )}
+              
+              {/* Render existing sidebar panels... */}
+              {/* New Table Configuration Panel (only when adding) */}
+              {showAddTableMode && (
+                <div style={{ 
+                  backgroundColor: '#ffffff',
+                  border: '2px solid #0d6efd',
+                  borderRadius: '12px',
+                  padding: isMobile ? '1rem' : '1.5rem',
+                  marginBottom: '1rem',
+                  boxShadow: '0 4px 12px rgba(13, 110, 253, 0.15)'
                 }}>
-                  🎨
-                </span>
-                <h4 style={{ margin: 0, color: '#495057', fontSize: '1.1rem' }}>
-                  Customize {getTableLabel(customizingTableId)}
-                </h4>
-              </div>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    marginBottom: '1.25rem',
+                    paddingBottom: '0.75rem',
+                    borderBottom: '2px solid #e9ecef'
+                  }}>
+                    <span style={{ 
+                      fontSize: '1.25rem', 
+                      fontWeight: 'bold', 
+                      color: '#0d6efd',
+                      marginRight: '0.5rem'
+                    }}>
+                      🆕
+                    </span>
+                    <h4 style={{ margin: 0, color: '#495057', fontSize: isMobile ? '1rem' : '1.1rem' }}>
+                      Configure New Table
+                    </h4>
+                  </div>
+                  
+                  {/* Simplified mobile configuration */}
+                  {isMobile ? (
+                    <div>
+                      <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '600', 
+                          marginBottom: '0.5rem',
+                          color: '#495057',
+                          fontSize: '0.9rem'
+                        }}>
+                          Shape
+                        </label>
+                        <select
+                          value={newTableConfig.shape}
+                          onChange={(e) => setNewTableConfig(prev => ({ ...prev, shape: e.target.value }))}
+                          style={{
+                            width: '100%',
+                            padding: '0.5rem',
+                            border: '1px solid #dee2e6',
+                            borderRadius: '6px',
+                            fontSize: '0.9rem'
+                          }}
+                        >
+                          <option value="circle">⭕ Circle</option>
+                          <option value="rectangle">▭ Rectangle</option>
+                          <option value="square">⬜ Square</option>
+                          <option value="oval">⭕ Oval</option>
+                        </select>
+                      </div>
+                      
+                      <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '600', 
+                          marginBottom: '0.5rem',
+                          color: '#495057',
+                          fontSize: '0.9rem'
+                        }}>
+                          Capacity: {newTableConfig.capacity} guests
+                        </label>
+                        <input 
+                          type="range" 
+                          min="2" 
+                          max="20" 
+                          value={newTableConfig.capacity}
+                          onChange={(e) => setNewTableConfig(prev => ({ ...prev, capacity: parseInt(e.target.value) }))}
+                          style={{ 
+                            width: '100%',
+                            height: '6px'
+                          }}
+                        />
+                      </div>
+                      
+                      <div style={{ 
+                        textAlign: 'center',
+                        padding: '1rem',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        color: '#0d6efd'
+                      }}>
+                        💡 Tap anywhere on the canvas to place table
+                      </div>
+                    </div>
+                  ) : (
+                    /* Full desktop configuration - keep existing code */
+                    <div>
+                      {/* Shape Selection */}
+                      <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '600', 
+                          marginBottom: '0.5rem',
+                          color: '#495057',
+                          fontSize: '0.9rem'
+                        }}>
+                          Shape
+                        </label>
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: '1fr 1fr', 
+                          gap: '0.5rem' 
+                        }}>
+                          {['circle', 'rectangle', 'square', 'oval'].map(shape => (
+                            <button
+                              key={shape}
+                              onClick={() => setNewTableConfig(prev => ({ ...prev, shape }))}
+                              style={{
+                                padding: '0.75rem',
+                                border: `2px solid ${newTableConfig.shape === shape ? '#0d6efd' : '#dee2e6'}`,
+                                borderRadius: '8px',
+                                backgroundColor: newTableConfig.shape === shape ? '#e7f3ff' : '#ffffff',
+                                color: newTableConfig.shape === shape ? '#0d6efd' : '#6c757d',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                fontWeight: newTableConfig.shape === shape ? '600' : '400',
+                                fontSize: '0.85rem',
+                                textTransform: 'capitalize'
+                              }}
+                            >
+                              {shape === 'circle' && '⭕'} 
+                              {shape === 'rectangle' && '▭'} 
+                              {shape === 'square' && '⬜'} 
+                              {shape === 'oval' && '⭕'} 
+                              <br />
+                              {shape}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Include rest of desktop configuration... */}
+                      <div style={{ marginBottom: '1.25rem' }}>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '600', 
+                          marginBottom: '0.5rem',
+                          color: '#495057',
+                          fontSize: '0.9rem'
+                        }}>
+                          Size: {newTableConfig.size}px
+                        </label>
+                        <input 
+                          type="range" 
+                          min="20" 
+                          max="80" 
+                          value={newTableConfig.size}
+                          onChange={(e) => setNewTableConfig(prev => ({ ...prev, size: parseInt(e.target.value) }))}
+                          style={{ 
+                            width: '100%',
+                            height: '6px',
+                            borderRadius: '3px',
+                            background: '#e9ecef',
+                            outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        />
+                      </div>
+                      
+                      <div style={{ marginBottom: '1.5rem' }}>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '600', 
+                          marginBottom: '0.5rem',
+                          color: '#495057',
+                          fontSize: '0.9rem'
+                        }}>
+                          Capacity: {newTableConfig.capacity} guests
+                        </label>
+                        <input 
+                          type="range" 
+                          min="2" 
+                          max="20" 
+                          value={newTableConfig.capacity}
+                          onChange={(e) => setNewTableConfig(prev => ({ ...prev, capacity: parseInt(e.target.value) }))}
+                          style={{ 
+                            width: '100%',
+                            height: '6px',
+                            borderRadius: '3px',
+                            background: '#e9ecef',
+                            outline: 'none',
+                            cursor: 'pointer'
+                          }}
+                        />
+                      </div>
+                      
+                      <div style={{ 
+                        textAlign: 'center',
+                        padding: '1rem',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '8px',
+                        fontSize: '0.85rem',
+                        color: '#6c757d'
+                      }}>
+                        <strong>Configuration:</strong><br />
+                        {newTableConfig.shape} • size {newTableConfig.size} • {newTableConfig.capacity} seats
+                        <br />
+                        <small style={{ color: '#0d6efd', marginTop: '0.5rem', display: 'block' }}>
+                          💡 Click anywhere on the canvas to place
+                        </small>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               
-              <CustomizationForm 
-                tableId={customizingTableId}
-                currentConfig={getTableConfig(customizingTableId)}
-                onApply={applyTableCustomization}
-                onCancel={() => {
-                  setShowCustomizationPanel(false);
-                  setCustomizingTableId(null);
-                }}
-                assignments={assignments}
-              />
-            </div>
-          )}
-          
-          {/* Quick Tools Panel */}
-          <div style={{ 
-            backgroundColor: '#ffffff',
-            border: '1px solid #dee2e6',
-            borderRadius: '12px',
-            padding: '1.25rem',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
-          }}>
-            <h5 style={{ 
-              margin: '0 0 1rem 0', 
-              color: '#495057', 
-              fontSize: '1rem',
-              display: 'flex',
-              alignItems: 'center'
-            }}>
-              <span style={{ marginRight: '0.5rem' }}>🛠️</span>
-              Quick Tools
-            </h5>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <button 
-                onClick={() => {
-                  setDanceFloorSize(prev => ({ 
-                    width: Math.min(prev.width + 20, 300), 
-                    height: Math.min(prev.height + 15, 200) 
-                  }));
-                }} 
-                style={{
-                  padding: '0.5rem',
-                  border: '1px solid #6c757d',
-                  borderRadius: '6px',
+              {/* Table Selection Panel - Simplified for mobile */}
+              {selectedTable && !showAddTableMode && (
+                <div style={{ 
                   backgroundColor: '#ffffff',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  transition: 'all 0.2s ease'
-                }}
-                title="Expand Dance Floor"
-              >
-                🏢+ Floor
-              </button>
+                  border: '2px solid #28a745',
+                  borderRadius: '12px',
+                  padding: isMobile ? '1rem' : '1.5rem',
+                  marginBottom: '1rem',
+                  boxShadow: '0 4px 12px rgba(40, 167, 69, 0.15)'
+                }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    marginBottom: '1.25rem',
+                    paddingBottom: '0.75rem',
+                    borderBottom: '2px solid #e9ecef'
+                  }}>
+                    <span style={{ 
+                      fontSize: '1.25rem', 
+                      fontWeight: 'bold', 
+                      color: '#28a745',
+                      marginRight: '0.5rem'
+                    }}>
+                      ✨
+                    </span>
+                    <h4 style={{ margin: 0, color: '#495057', fontSize: isMobile ? '1rem' : '1.1rem' }}>
+                      {getTableLabel(selectedTable)}
+                    </h4>
+                  </div>
+                  
+                  {/* Table Info - Simplified for mobile */}
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: isMobile ? '1fr' : 'auto 1fr',
+                      gap: isMobile ? '0.25rem' : '0.5rem 1rem',
+                      fontSize: '0.9rem'
+                    }}>
+                      {isMobile ? (
+                        <>
+                          <div><strong>Shape:</strong> {getTableConfig(selectedTable).shape}</div>
+                          <div><strong>Capacity:</strong> {getTableConfig(selectedTable).capacity} guests</div>
+                          <div><strong>Current:</strong> {assignments.filter(a => a.table === selectedTable).length} guests</div>
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ fontWeight: '600', color: '#6c757d' }}>Shape:</span>
+                          <span style={{ textTransform: 'capitalize' }}>{getTableConfig(selectedTable).shape}</span>
+                          
+                          <span style={{ fontWeight: '600', color: '#6c757d' }}>Size:</span>
+                          <span>{getTableConfig(selectedTable).size}px</span>
+                          
+                          <span style={{ fontWeight: '600', color: '#6c757d' }}>Capacity:</span>
+                          <span>{getTableConfig(selectedTable).capacity} guests</span>
+                          
+                          <span style={{ fontWeight: '600', color: '#6c757d' }}>Current:</span>
+                          <span>{assignments.filter(a => a.table === selectedTable).length} guests</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons - Stacked for mobile */}
+                  <div style={{ 
+                    display: 'flex', 
+                    flexDirection: isMobile ? 'column' : 'column', 
+                    gap: '0.75rem' 
+                  }}>
+                    <button 
+                      onClick={() => handleEditLabel(selectedTable)} 
+                      style={{
+                        padding: isMobile ? '0.75rem' : '0.75rem',
+                        border: '2px solid #17a2b8',
+                        borderRadius: '8px',
+                        backgroundColor: '#ffffff',
+                        color: '#17a2b8',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '0.9rem',
+                        transition: 'all 0.2s ease',
+                        minHeight: isMobile ? '44px' : 'auto'
+                      }}
+                    >
+                      ✏️ Edit Label
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleCustomizeTable(selectedTable)} 
+                      style={{
+                        padding: isMobile ? '0.75rem' : '0.75rem',
+                        border: '2px solid #fd7e14',
+                        borderRadius: '8px',
+                        backgroundColor: '#ffffff',
+                        color: '#fd7e14',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '0.9rem',
+                        transition: 'all 0.2s ease',
+                        minHeight: isMobile ? '44px' : 'auto'
+                      }}
+                    >
+                      🎨 Customize Table
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleRemoveTable(selectedTable)} 
+                      style={{
+                        padding: isMobile ? '0.75rem' : '0.75rem',
+                        border: '2px solid #dc3545',
+                        borderRadius: '8px',
+                        backgroundColor: '#ffffff',
+                        color: '#dc3545',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '0.9rem',
+                        transition: 'all 0.2s ease',
+                        minHeight: isMobile ? '44px' : 'auto'
+                      }}
+                    >
+                      🗑️ Remove Table
+                    </button>
+                  </div>
+                </div>
+              )}
               
-              <button 
-                onClick={() => {
-                  setDanceFloorSize(prev => ({ 
-                    width: Math.max(prev.width - 20, 120), 
-                    height: Math.max(prev.height - 15, 80) 
-                  }));
-                }} 
-                style={{
-                  padding: '0.5rem',
-                  border: '1px solid #6c757d',
-                  borderRadius: '6px',
+              {/* Mobile Tools Panel */}
+              {isMobile && (
+                <div style={{ 
                   backgroundColor: '#ffffff',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  transition: 'all 0.2s ease'
-                }}
-                title="Shrink Dance Floor"
-              >
-                🏢- Floor
-              </button>
+                  border: '1px solid #dee2e6',
+                  borderRadius: '12px',
+                  padding: '1rem',
+                  marginBottom: '1rem',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+                }}>
+                  <h5 style={{ 
+                    margin: '0 0 1rem 0', 
+                    color: '#495057', 
+                    fontSize: '1rem',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <span style={{ marginRight: '0.5rem' }}>🛠️</span>
+                    Mobile Tools
+                  </h5>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                    <button 
+                      onClick={clearSavedLayout} 
+                      style={{
+                        padding: '0.75rem',
+                        border: '1px solid #ffc107',
+                        borderRadius: '6px',
+                        backgroundColor: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        minHeight: '44px'
+                      }}
+                    >
+                      🔄 Reset
+                    </button>
+                    
+                    <button 
+                      onClick={exportImage} 
+                      style={{
+                        padding: '0.75rem',
+                        border: '1px solid #0d6efd',
+                        borderRadius: '6px',
+                        backgroundColor: '#ffffff',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        minHeight: '44px'
+                      }}
+                    >
+                      📷 Export
+                    </button>
+                  </div>
+                  
+                  <div style={{ 
+                    textAlign: 'center',
+                    fontSize: '0.8rem', 
+                    color: '#6c757d', 
+                    lineHeight: '1.4',
+                    backgroundColor: '#f8f9fa',
+                    padding: '0.75rem',
+                    borderRadius: '6px'
+                  }}>
+                    <strong>Touch Tips:</strong><br />
+                    • Pinch to zoom in/out<br />
+                    • Drag canvas to pan around<br />
+                    • Tap tables to select<br />
+                    • Long press for table options
+                  </div>
+                </div>
+              )}
+              
+              {/* Instructions - Desktop only or simplified mobile */}
+              {!selectedTable && !showAddTableMode && !showCustomizationPanel && (
+                <div style={{ 
+                  backgroundColor: '#f8f9fa',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '12px',
+                  padding: isMobile ? '1rem' : '1.25rem'
+                }}>
+                  <h5 style={{ 
+                    margin: '0 0 1rem 0', 
+                    color: '#495057', 
+                    fontSize: '1rem',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <span style={{ marginRight: '0.5rem' }}>💡</span>
+                    {isMobile ? 'Quick Tips' : 'Quick Guide'}
+                  </h5>
+                  
+                  <div style={{ fontSize: '0.85rem', color: '#6c757d', lineHeight: '1.5' }}>
+                    {isMobile ? (
+                      <>
+                        <p style={{ margin: '0 0 0.5rem 0' }}>
+                          <strong>• Add Tables:</strong> Tap "Add Table" → configure → tap to place
+                        </p>
+                        <p style={{ margin: '0 0 0.5rem 0' }}>
+                          <strong>• Select Tables:</strong> Tap any table to select
+                        </p>
+                        <p style={{ margin: '0' }}>
+                          <strong>• Navigate:</strong> Pinch to zoom, drag to pan
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p style={{ margin: '0 0 0.75rem 0' }}>
+                          <strong>• Add Tables:</strong> Click "Add Table", configure, then click to place
+                        </p>
+                        <p style={{ margin: '0 0 0.75rem 0' }}>
+                          <strong>• Select Tables:</strong> Double-click any table to select and customize
+                        </p>
+                        <p style={{ margin: '0 0 0.75rem 0' }}>
+                          <strong>• Move Elements:</strong> Drag tables, sweetheart table, or dance floor
+                        </p>
+                        <p style={{ margin: '0' }}>
+                          <strong>• Navigation:</strong> Mouse wheel to zoom, drag canvas to pan
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          
-          {/* Instructions */}
-          {!selectedTable && !showAddTableMode && !showCustomizationPanel && (
-            <div style={{ 
-              backgroundColor: '#f8f9fa',
-              border: '1px solid #dee2e6',
-              borderRadius: '12px',
-              padding: '1.25rem'
-            }}>
-              <h5 style={{ 
-                margin: '0 0 1rem 0', 
-                color: '#495057', 
-                fontSize: '1rem',
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                <span style={{ marginRight: '0.5rem' }}>💡</span>
-                Quick Guide
-              </h5>
-              
-              <div style={{ fontSize: '0.85rem', color: '#6c757d', lineHeight: '1.5' }}>
-                <p style={{ margin: '0 0 0.75rem 0' }}>
-                  <strong>• Add Tables:</strong> Click "Add Table", configure, then click to place
-                </p>
-                <p style={{ margin: '0 0 0.75rem 0' }}>
-                  <strong>• Select Tables:</strong> Double-click any table to select and customize
-                </p>
-                <p style={{ margin: '0 0 0.75rem 0' }}>
-                  <strong>• Move Elements:</strong> Drag tables, sweetheart table, or dance floor
-                </p>
-                <p style={{ margin: '0' }}>
-                  <strong>• Navigation:</strong> Mouse wheel to zoom, drag canvas to pan
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-// Customization Form Component
+// CustomizationForm Component - Mobile Optimized
 const CustomizationForm = ({ tableId, currentConfig, onApply, onCancel, assignments }) => {
   const [config, setConfig] = useState(currentConfig);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const tableGuests = assignments.filter(a => a.table === tableId);
   const wouldRemoveGuests = config.capacity < tableGuests.length;
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div>
-      {/* Shape Selection */}
+      {/* Shape Selection - Mobile vs Desktop */}
       <div style={{ marginBottom: '1.25rem' }}>
         <label style={{ 
           display: 'block', 
@@ -1696,134 +1564,161 @@ const CustomizationForm = ({ tableId, currentConfig, onApply, onCancel, assignme
         }}>
           Shape
         </label>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '1fr 1fr', 
-          gap: '0.5rem' 
-        }}>
-          {['circle', 'rectangle', 'square', 'oval'].map(shape => (
-            <button
-              key={shape}
-              onClick={() => setConfig(prev => ({ ...prev, shape }))}
-              style={{
-                padding: '0.75rem',
-                border: `2px solid ${config.shape === shape ? '#fd7e14' : '#dee2e6'}`,
-                borderRadius: '8px',
-                backgroundColor: config.shape === shape ? '#fff3e0' : '#ffffff',
-                color: config.shape === shape ? '#fd7e14' : '#6c757d',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                fontWeight: config.shape === shape ? '600' : '400',
-                fontSize: '0.85rem',
-                textTransform: 'capitalize'
-              }}
-            >
-              {shape === 'circle' && '⭕'} 
-              {shape === 'rectangle' && '▭'} 
-              {shape === 'square' && '⬜'} 
-              {shape === 'oval' && '⭕'} 
-              <br />
-              {shape}
-            </button>
-          ))}
-        </div>
+        
+        {isMobile ? (
+          <select
+            value={config.shape}
+            onChange={(e) => setConfig(prev => ({ ...prev, shape: e.target.value }))}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '2px solid #fd7e14',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              backgroundColor: '#fff3e0'
+            }}
+          >
+            <option value="circle">⭕ Circle</option>
+            <option value="rectangle">▭ Rectangle</option>
+            <option value="square">⬜ Square</option>
+            <option value="oval">⭕ Oval</option>
+          </select>
+        ) : (
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr', 
+            gap: '0.5rem' 
+          }}>
+            {['circle', 'rectangle', 'square', 'oval'].map(shape => (
+              <button
+                key={shape}
+                onClick={() => setConfig(prev => ({ ...prev, shape }))}
+                style={{
+                  padding: '0.75rem',
+                  border: `2px solid ${config.shape === shape ? '#fd7e14' : '#dee2e6'}`,
+                  borderRadius: '8px',
+                  backgroundColor: config.shape === shape ? '#fff3e0' : '#ffffff',
+                  color: config.shape === shape ? '#fd7e14' : '#6c757d',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  fontWeight: config.shape === shape ? '600' : '400',
+                  fontSize: '0.85rem',
+                  textTransform: 'capitalize'
+                }}
+              >
+                {shape === 'circle' && '⭕'} 
+                {shape === 'rectangle' && '▭'} 
+                {shape === 'square' && '⬜'} 
+                {shape === 'oval' && '⭕'} 
+                <br />
+                {shape}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       
-      {/* Color Selection */}
-      <div style={{ marginBottom: '1.25rem' }}>
-        <label style={{ 
-          display: 'block', 
-          fontWeight: '600', 
-          marginBottom: '0.5rem',
-          color: '#495057',
-          fontSize: '0.9rem'
-        }}>
-          Background Color
-        </label>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(4, 1fr)', 
-          gap: '0.5rem',
-          marginBottom: '0.75rem'
-        }}>
-          {[
-            { color: '#f8f9fa', name: 'Default' },
-            { color: '#fff3cd', name: 'Gold' },
-            { color: '#d1ecf1', name: 'Blue' },
-            { color: '#d4edda', name: 'Green' },
-            { color: '#f8d7da', name: 'Pink' },
-            { color: '#e2e3e5', name: 'Gray' },
-            { color: '#fff2e6', name: 'Orange' },
-            { color: '#e6f3ff', name: 'Light Blue' }
-          ].map(({ color, name }) => (
-            <button
-              key={color}
-              onClick={() => setConfig(prev => ({ ...prev, backgroundColor: color }))}
+      {/* Color Selection - Simplified for mobile */}
+      {!isMobile && (
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label style={{ 
+            display: 'block', 
+            fontWeight: '600', 
+            marginBottom: '0.5rem',
+            color: '#495057',
+            fontSize: '0.9rem'
+          }}>
+            Background Color
+          </label>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(4, 1fr)', 
+            gap: '0.5rem',
+            marginBottom: '0.75rem'
+          }}>
+            {[
+              { color: '#f8f9fa', name: 'Default' },
+              { color: '#fff3cd', name: 'Gold' },
+              { color: '#d1ecf1', name: 'Blue' },
+              { color: '#d4edda', name: 'Green' },
+              { color: '#f8d7da', name: 'Pink' },
+              { color: '#e2e3e5', name: 'Gray' },
+              { color: '#fff2e6', name: 'Orange' },
+              { color: '#e6f3ff', name: 'Light Blue' }
+            ].map(({ color, name }) => (
+              <button
+                key={color}
+                onClick={() => setConfig(prev => ({ ...prev, backgroundColor: color }))}
+                style={{
+                  width: '100%',
+                  height: '35px',
+                  border: `3px solid ${config.backgroundColor === color ? '#fd7e14' : '#dee2e6'}`,
+                  borderRadius: '6px',
+                  backgroundColor: color,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  color: color === '#f8f9fa' || color === '#fff3cd' || color === '#fff2e6' || color === '#e6f3ff' ? '#495057' : '#333'
+                }}
+                title={name}
+              >
+                {config.backgroundColor === color && '✓'}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input
+              type="color"
+              value={config.backgroundColor}
+              onChange={(e) => setConfig(prev => ({ ...prev, backgroundColor: e.target.value }))}
               style={{
-                width: '100%',
+                width: '35px',
                 height: '35px',
-                border: `3px solid ${config.backgroundColor === color ? '#fd7e14' : '#dee2e6'}`,
+                border: 'none',
                 borderRadius: '6px',
-                backgroundColor: color,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '0.7rem',
-                fontWeight: '600',
-                color: color === '#f8f9fa' || color === '#fff3cd' || color === '#fff2e6' || color === '#e6f3ff' ? '#495057' : '#333'
+                cursor: 'pointer'
               }}
-              title={name}
-            >
-              {config.backgroundColor === color && '✓'}
-            </button>
-          ))}
+            />
+            <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>
+              Custom: {config.backgroundColor}
+            </span>
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <input
-            type="color"
-            value={config.backgroundColor}
-            onChange={(e) => setConfig(prev => ({ ...prev, backgroundColor: e.target.value }))}
-            style={{
-              width: '35px',
-              height: '35px',
-              border: 'none',
-              borderRadius: '6px',
+      )}
+      
+      {/* Size Slider - Desktop only */}
+      {!isMobile && (
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label style={{ 
+            display: 'block', 
+            fontWeight: '600', 
+            marginBottom: '0.5rem',
+            color: '#495057',
+            fontSize: '0.9rem'
+          }}>
+            Size: {config.size}px
+          </label>
+          <input 
+            type="range" 
+            min="20" 
+            max="80" 
+            value={config.size}
+            onChange={(e) => setConfig(prev => ({ ...prev, size: parseInt(e.target.value) }))}
+            style={{ 
+              width: '100%',
+              height: '6px',
+              borderRadius: '3px',
+              background: '#e9ecef',
+              outline: 'none',
               cursor: 'pointer'
             }}
           />
-          <span style={{ fontSize: '0.8rem', color: '#6c757d' }}>
-            Custom: {config.backgroundColor}
-          </span>
         </div>
-      </div>
-      <div style={{ marginBottom: '1.25rem' }}>
-        <label style={{ 
-          display: 'block', 
-          fontWeight: '600', 
-          marginBottom: '0.5rem',
-          color: '#495057',
-          fontSize: '0.9rem'
-        }}>
-          Size: {config.size}px
-        </label>
-        <input 
-          type="range" 
-          min="20" 
-          max="80" 
-          value={config.size}
-          onChange={(e) => setConfig(prev => ({ ...prev, size: parseInt(e.target.value) }))}
-          style={{ 
-            width: '100%',
-            height: '6px',
-            borderRadius: '3px',
-            background: '#e9ecef',
-            outline: 'none',
-            cursor: 'pointer'
-          }}
-        />
-      </div>
+      )}
       
       {/* Capacity Slider */}
       <div style={{ marginBottom: '1.5rem' }}>
@@ -1866,13 +1761,17 @@ const CustomizationForm = ({ tableId, currentConfig, onApply, onCancel, assignme
         )}
       </div>
       
-      {/* Action Buttons */}
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
+      {/* Action Buttons - Mobile friendly */}
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: '0.75rem' 
+      }}>
         <button 
           onClick={() => onApply(tableId, config)}
           style={{
             flex: 1,
-            padding: '0.75rem',
+            padding: isMobile ? '1rem' : '0.75rem',
             border: 'none',
             borderRadius: '8px',
             backgroundColor: '#fd7e14',
@@ -1880,7 +1779,8 @@ const CustomizationForm = ({ tableId, currentConfig, onApply, onCancel, assignme
             cursor: 'pointer',
             fontWeight: '600',
             fontSize: '0.9rem',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            minHeight: isMobile ? '44px' : 'auto'
           }}
           onMouseOver={(e) => e.target.style.backgroundColor = '#e8690b'}
           onMouseOut={(e) => e.target.style.backgroundColor = '#fd7e14'}
@@ -1892,7 +1792,7 @@ const CustomizationForm = ({ tableId, currentConfig, onApply, onCancel, assignme
           onClick={onCancel}
           style={{
             flex: 1,
-            padding: '0.75rem',
+            padding: isMobile ? '1rem' : '0.75rem',
             border: '2px solid #6c757d',
             borderRadius: '8px',
             backgroundColor: '#ffffff',
@@ -1900,7 +1800,8 @@ const CustomizationForm = ({ tableId, currentConfig, onApply, onCancel, assignme
             cursor: 'pointer',
             fontWeight: '600',
             fontSize: '0.9rem',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            minHeight: isMobile ? '44px' : 'auto'
           }}
           onMouseOver={(e) => {
             e.target.style.backgroundColor = '#6c757d';

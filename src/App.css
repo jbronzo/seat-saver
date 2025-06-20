@@ -67,208 +67,6 @@
   background: #e9ecef;
 }
 
-/* ========== OLD TABLE STYLES (Legacy - Keep for compatibility) ========== */
-
-.chart-container {
-  position: relative;
-  min-height: 700px;
-  min-width: 800px;
-}
-
-.table-circle {
-  position: absolute;
-  width: var(--table-size);
-  height: var(--table-size);
-  border-radius: 50%;
-  border: var(--table-border);
-  background: #f8f9fa;
-}
-
-.table-info {
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  cursor: pointer;
-  font-size: 1rem;
-  color: #0d6efd;
-}
-
-.table-label {
-  position: absolute;
-  top: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.count-display {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translate(-50%, 15px);
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 2px 6px;
-  border-radius: 10px;
-  border: 1px solid #dee2e6;
-  color: #495057;
-}
-
-.sweetheart-table {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 50px;
-  background: #fff3cd;
-  border: 3px solid #ffc107;
-  border-radius: 25px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  z-index: 5;
-}
-
-.sweetheart-label {
-  font-weight: bold;
-  font-size: 1rem;
-  color: #856404;
-}
-
-.sweetheart-title {
-  font-size: 0.6rem;
-  color: #856404;
-  margin-top: 1px;
-}
-
-.dance-floor {
-  position: absolute;
-  top: 120px;
-  right: 50px;
-  width: 180px;
-  height: 120px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border: 3px solid #2196f3;
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 5;
-}
-
-.dance-floor-label {
-  font-weight: bold;
-  font-size: 1rem;
-  color: #1565c0;
-  text-align: center;
-}
-
-.guest-slot {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 2px solid #0d6efd;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.guest-slot:hover {
-  transform: translate(-50%, -50%) scale(1.2);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.guest-slot.filled {
-  background: #0d6efd;
-  border-color: #0a58ca;
-  cursor: grab;
-}
-
-.guest-slot.filled:hover {
-  background: #0a58ca;
-}
-
-.guest-slot:hover::after {
-  content: attr(data-name);
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.85);
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-  font-size: 0.75rem;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.guest-slot.filled:hover::after {
-  content: attr(data-name) " (Click to remove)";
-}
-
-/* Guest slot positioning */
-.table-circle span.guest-slot:nth-of-type(1) { 
-  transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(2) { 
-  transform: translate(-50%, -50%) rotate(36deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(3) { 
-  transform: translate(-50%, -50%) rotate(72deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(4) { 
-  transform: translate(-50%, -50%) rotate(108deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(5) { 
-  transform: translate(-50%, -50%) rotate(144deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(6) { 
-  transform: translate(-50%, -50%) rotate(180deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(7) { 
-  transform: translate(-50%, -50%) rotate(216deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(8) { 
-  transform: translate(-50%, -50%) rotate(252deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(9) { 
-  transform: translate(-50%, -50%) rotate(288deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-.table-circle span.guest-slot:nth-of-type(10) { 
-  transform: translate(-50%, -50%) rotate(324deg) translateY(calc(-0.5 * var(--table-size) - 6px)); 
-}
-
-/* Table positions */
-#table-1 { top: 90px; left: 80px; }
-#table-2 { top: 90px; left: 250px; }
-#table-3 { top: 90px; left: 420px; }
-#table-4 { top: 90px; left: 590px; }
-#table-5 { top: 250px; left: 80px; }
-#table-6 { top: 250px; left: 250px; }
-#table-7 { top: 250px; left: 420px; }
-#table-8 { top: 410px; left: 80px; }
-#table-9 { top: 410px; left: 250px; }
-#table-10 { top: 410px; left: 420px; }
-#table-11 { top: 570px; left: 50px; }
-#table-12 { top: 570px; left: 170px; }
-#table-13 { top: 570px; left: 290px; }
-#table-14 { top: 570px; left: 410px; }
-#table-15 { top: 570px; left: 530px; }
-#table-16 { top: 570px; left: 650px; }
-
 /* ========== CANVAS/KONVA STYLES ========== */
 
 .canvas-chart-area h3 {
@@ -279,39 +77,18 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  touch-action: pan-x pan-y;
+  touch-action: none; /* CRITICAL for mobile - prevents default touch behaviors */
+  user-select: none; /* Prevents text selection on mobile */
 }
 
 .canvas-chart-area div[ondrop] {
   transition: border-color 0.2s ease;
+  touch-action: none; /* Prevent scrolling when touching canvas area */
 }
 
 .canvas-chart-area div[ondrop]:hover {
   border-color: #0d6efd;
   background: rgba(13, 110, 253, 0.02);
-}
-
-.draggable-table {
-  user-select: none;
-  transition: box-shadow 0.2s ease;
-}
-
-.draggable-table:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.draggable-table.dragging {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  z-index: 1000;
-  transform: rotate(2deg);
-}
-
-.dragging * {
-  pointer-events: none;
-}
-
-.dragging .guest-slot {
-  pointer-events: auto;
 }
 
 /* ========== BUTTON STYLES ========== */
@@ -383,20 +160,8 @@
   border-color: #0a58ca; 
 }
 
-.btn-outline-info {
-  background: transparent;
-  color: #0dcaf0;
-  border-color: #0dcaf0;
-}
-
-.btn-outline-info:hover {
-  background: #0dcaf0;
-  color: white;
-  border-color: #0dcaf0;
-}
-
 .btn-outline-secondary {
-  background: transparent;
+  background: white;
   color: #6c757d;
   border-color: #6c757d;
 }
@@ -404,11 +169,32 @@
 .btn-outline-secondary:hover {
   background: #6c757d;
   color: white;
-  border-color: #6c757d;
+}
+
+.btn-outline-warning {
+  background: white;
+  color: #ffc107;
+  border-color: #ffc107;
+}
+
+.btn-outline-warning:hover {
+  background: #ffc107;
+  color: #000;
+}
+
+.btn-outline-info {
+  background: white;
+  color: #0dcaf0;
+  border-color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+  background: #0dcaf0;
+  color: white;
 }
 
 .btn-outline-danger {
-  background: transparent;
+  background: white;
   color: #dc3545;
   border-color: #dc3545;
 }
@@ -416,19 +202,6 @@
 .btn-outline-danger:hover {
   background: #dc3545;
   color: white;
-  border-color: #dc3545;
-}
-
-.btn-outline-warning {
-  background: transparent;
-  color: #ffc107;
-  border-color: #ffc107;
-}
-
-.btn-outline-warning:hover {
-  background: #ffc107;
-  color: #212529;
-  border-color: #ffc107;
 }
 
 /* ========== FORM STYLES ========== */
@@ -502,8 +275,9 @@ h6 {
   font-size: 0.875rem;
 }
 
-/* ========== TABLET RESPONSIVE DESIGN ========== */
+/* ========== MOBILE RESPONSIVE DESIGN ========== */
 
+/* Tablet styles */
 @media (max-width: 1024px) {
   .sidebar {
     width: 280px;
@@ -521,8 +295,7 @@ h6 {
   }
 }
 
-/* ========== CRITICAL MOBILE FIXES ========== */
-/* IMPROVED MOBILE FIXES - Replace the existing mobile section */
+/* CRITICAL MOBILE FIXES - ENHANCED */
 @media (max-width: 768px) {
   .wedding-seating-app {
     flex-direction: column !important;
@@ -534,114 +307,161 @@ h6 {
   .sidebar {
     width: 100% !important;
     min-width: auto !important;
-    height: 35vh !important; /* Reduced from 40vh */
-    max-height: 35vh !important;
+    height: 55vh !important;
+    max-height: 55vh !important;
     border-right: none !important;
     border-bottom: 2px solid #dee2e6 !important;
     overflow-y: auto !important;
     flex-shrink: 0 !important;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
     position: relative !important;
-    padding: 0.75rem !important; /* Reduced padding */
   }
   
   .canvas-chart-area {
-    height: 65vh !important; /* Increased from 60vh */
-    min-height: 400px !important;
+    height: 45vh !important;
+    min-height: 300px !important;
     width: 100% !important;
     flex: none !important;
     overflow: hidden !important;
     padding: 0.5rem !important;
+    position: relative !important;
   }
   
-  /* Better mobile header spacing */
+  /* MOBILE CANVAS OPTIMIZATION */
+  .konvajs-content {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    touch-action: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
+  
+  /* Prevent zoom on double tap for canvas */
+  .canvas-chart-area {
+    touch-action: manipulation !important;
+  }
+  
+  .canvas-chart-area > div {
+    touch-action: none !important;
+  }
+  
+  /* Compact sidebar content on mobile */
+  .sidebar .mb-3 {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .sidebar h6 {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .sidebar h4 {
+    font-size: 1.3rem !important;
+  }
+  
+  /* Compact guest list */
+  .guest-list {
+    max-height: 120px !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Stack buttons better */
+  .sidebar .btn {
+    font-size: 0.8rem !important;
+    padding: 0.4rem 0.8rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  /* Make buttons touch-friendly */
+  .sidebar .btn, 
+  .canvas-chart-area .btn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  
+  /* Compact canvas header */
   .canvas-chart-area > div:first-child {
     padding: 0.5rem !important;
     margin-bottom: 0.5rem !important;
   }
   
   .canvas-chart-area h3 {
-    font-size: 0.9rem !important; /* Even smaller on mobile */
+    font-size: 1rem !important;
     margin-bottom: 0.5rem !important;
   }
   
-  /* More compact sidebar sections */
-  .sidebar .mb-3 {
-    margin-bottom: 0.5rem !important;
+  .canvas-chart-area .btn {
+    font-size: 0.75rem !important;
+    padding: 0.35rem 0.6rem !important;
   }
   
-  .sidebar h6 {
-    font-size: 0.8rem !important;
-    margin-bottom: 0.4rem !important;
+  /* Stack canvas controls on mobile */
+  .canvas-chart-area > div:first-child > div:last-child {
+    flex-wrap: wrap !important;
+    gap: 0.25rem !important;
+  }
+  
+  /* MOBILE OVERLAY STYLES */
+  .mobile-sidebar-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-color: rgba(0, 0, 0, 0.8) !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    padding: 1rem !important;
+    overflow-y: auto !important;
+  }
+  
+  .mobile-sidebar-content {
+    background: white !important;
+    border-radius: 12px !important;
+    padding: 1rem !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    position: relative !important;
+    margin-top: 2rem !important;
+  }
+}
+
+/* Small mobile phones */
+@media (max-width: 480px) {
+  .sidebar {
+    padding: 0.5rem !important;
+    height: 60vh !important;
+  }
+  
+  .canvas-chart-area {
+    height: 40vh !important;
+    min-height: 250px !important;
   }
   
   .sidebar h4 {
     font-size: 1.1rem !important;
-    margin-bottom: 0.5rem !important;
   }
   
-  /* Ultra-compact guest list for mobile */
-  .guest-list {
-    max-height: 100px !important; /* Reduced even more */
-    overflow-y: auto !important;
-  }
-  
-  .guest-list li {
-    padding: 0.4rem !important;
-    margin: 0.2rem 0 !important;
-    min-height: 44px !important;
-    font-size: 0.8rem !important;
-    display: flex !important;
-    align-items: center !important;
-  }
-  
-  /* Compact buttons */
   .sidebar .btn {
-    font-size: 0.7rem !important;
-    padding: 0.4rem !important;
-    margin-bottom: 0.2rem !important;
+    font-size: 0.75rem !important;
+    padding: 0.35rem 0.6rem !important;
   }
   
-  /* Statistics section more compact */
-  .sidebar div[style*="backgroundColor: #f8f9fa"] {
-    padding: 0.5rem !important;
-    font-size: 0.8rem !important;
-  }
-  
-  /* Canvas controls more compact */
-  .canvas-chart-area .btn {
-    font-size: 0.7rem !important;
-    padding: 0.3rem 0.5rem !important;
-  }
-  
-  /* Make the canvas fill better */
-  .canvas-chart-area .konvajs-content {
-    width: 100% !important;
-    height: calc(100% - 50px) !important; /* Reduced header space */
-  }
-}
-
-/* iPhone SE and very small screens */
-@media (max-width: 414px) {
-  .sidebar {
-    height: 30vh !important; /* Even less space for sidebar */
-    padding: 0.5rem !important;
-  }
-  
-  .canvas-chart-area {
-    height: 70vh !important; /* More space for canvas */
-  }
-  
-  .sidebar h4 {
-    font-size: 1rem !important;
-  }
-  
+  /* Even more compact guest list */
   .guest-list {
-    max-height: 80px !important;
+    max-height: 100px !important;
   }
   
-  .canvas-chart-area h3 {
-    font-size: 0.85rem !important;
+  /* Hide some less critical text on very small screens */
+  .sidebar small.text-muted {
+    font-size: 0.7rem !important;
   }
 }
 
@@ -677,14 +497,33 @@ h6 {
   .guest-list li {
     padding: 0.75rem !important;
     margin: 0.25rem 0 !important;
-    min-height: 48px !important;
+    min-height: 44px !important;
     display: flex !important;
     align-items: center !important;
   }
   
   /* Make canvas interactions easier on touch */
   .konvajs-content {
-    touch-action: pan-x pan-y !important;
+    touch-action: none !important;
+  }
+  
+  /* Disable text selection on touch devices */
+  * {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    -khtml-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+  }
+  
+  /* Allow text selection in inputs and content areas */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text !important;
+    -khtml-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    user-select: text !important;
   }
 }
 
@@ -696,8 +535,39 @@ h6 {
   }
   
   input[type="text"], 
-  input[type="file"] {
+  input[type="file"],
+  input[type="range"],
+  select {
     font-size: 16px !important;
+  }
+  
+  /* Range inputs for mobile */
+  input[type="range"] {
+    height: 8px !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    background: #e9ecef !important;
+    border-radius: 4px !important;
+    outline: none !important;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    background: #0d6efd !important;
+    cursor: pointer !important;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    background: #0d6efd !important;
+    cursor: pointer !important;
+    border: none !important;
   }
 }
 
@@ -746,4 +616,28 @@ h6 {
 
 .sidebar::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Mobile scrollbars */
+@media (max-width: 768px) {
+  .mobile-sidebar-content::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .mobile-sidebar-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .mobile-sidebar-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+  }
+}
+
+/* Prevent body scroll when mobile sidebar is open */
+.body-no-scroll {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
 }
